@@ -1,3 +1,28 @@
+//! Contains various utility types and macros useful for testing hyper clients. 
+//! 
+//! # Macros
+//! The `mock_connector!` and `mock_connector_in_order!` macros can be used to 
+//! feed a client with preset data. That way you can control exactly what it will
+//! see, confining the test-case to its own sandbox that way.
+//!
+//! # Usage
+//! 
+//! Set it up for use in tests in `Cargo.toml`
+//!
+//! ```toml
+//! [dev-dependencies]
+//! yup-hyper-mock = "*"
+//! log = "*"  # log macros are used within yup-hyper-mock
+//! ```
+//! 
+//! Link it into your `src/(lib.rs|main.rs)`
+//! 
+//! ```Rust
+//! #[cfg(test)] #[macro_use]
+//! extern crate "yup-hyper-mock" as hyper_mock
+//! ```
+
+
 #![feature(old_io,io)]
 extern crate hyper;
 
@@ -11,11 +36,15 @@ use std::old_io::net::ip::SocketAddr;
 
 use hyper::net::{NetworkStream, NetworkConnector};
 
+/// A `NetworkStream` compatible stream that writes into memory, and reads from memory.
 pub struct MockStream {
     pub read: MemReader,
     pub write: MemWriter,
 }
 
+/// A `NetworkStream` compatible stream which contains another `NetworkStream`, 
+/// whose traffic will be written to another stream.
+/// Currently that stream will always be standard error.
 pub struct TeeStream<T> {
     pub read_write: T,
     pub copy_to: LineBufferedWriter<StdWriter>,
@@ -117,6 +146,8 @@ impl NetworkStream for MockStream {
     }
 }
 
+/// A `NetworkConnector` which creates `MockStream` instances exclusively.
+/// It may be useful to intercept writes.
 pub struct MockConnector;
 
 impl NetworkConnector for MockConnector {
@@ -127,6 +158,12 @@ impl NetworkConnector for MockConnector {
     }
 }
 
+/// A `NetworkConnector` embedding another `NetworkConnector` instance, 
+/// and sets it up to write all reads and writes to standard error as well.
+///
+/// > **NOTE** It was originally intended to allow arbitrary streams to copy data to,
+/// > but I couldn't get passt the compiler with that as normal streams, like files,
+/// > are not normally clonable. Maybe an Arc+Mutex would have helped ... .
 pub struct TeeConnector<C>
     where C: NetworkConnector {
     pub connector: C,
@@ -152,7 +189,9 @@ impl<C> NetworkConnector for TeeConnector<C>
     }
 }
 
-/// new connectors must be created if you wish to intercept requests.
+/// This macro maps host URLs to a respective reply, which is given in plain-text.
+/// It ignores, but stores, everything that is written to it. However, the stored
+/// values are not accessible just yet.
 #[macro_export]
 macro_rules! mock_connector (
     ($name:ident {
@@ -186,6 +225,8 @@ macro_rules! mock_connector (
     )
 );
 
+/// This macro yields all given server replies in the order they are given.
+/// The destination host URL doesn't matter at all.
 #[macro_export]
 macro_rules! mock_connector_in_order (
     ($name:ident {
