@@ -1,0 +1,12 @@
+[package]
+
+name = "yup-hyper-mock"
+version = "0.0.1"
+authors = ["Sean McArthur <sean.monstar@gmail.com>",
+           "Jonathan Reem <jonathan.reem@gmail.com>",
+           "Sebastian Thiel <byronimo@gmail.com>"]
+description = "A utility library for testing clients using hyper"
+
+[dependencies]
+hyper = "*"
+log = "*"
