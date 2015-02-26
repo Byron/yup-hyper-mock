@@ -46,6 +46,7 @@ mod tests {
         assert_eq!(res.headers.get(), Some(&hyper::Server("mock3".to_string())));
     }
 }
+```
 
 ## Credits
 

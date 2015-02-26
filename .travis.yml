@@ -1,0 +1,14 @@
+language: rust
+after_success: |
+  [ $TRAVIS_BRANCH = master ] &&
+  [ $TRAVIS_PULL_REQUEST = false ] &&
+  cargo doc &&
+  echo '<meta http-equiv=refresh content=0;url=yup-hyper-mock/index.html>' > target/doc/index.html &&
+  git shortlog -s -n | cut -c 8- > target/doc/humans.txt &&
+  sudo pip install ghp-import &&
+  ghp-import -n target/doc &&
+  git push -fq https://${TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git gh-pages
+  
+env:
+  global:
+    secure: xsWR1FHBIJRYOv17p0o6RrwHPDE4spcqzsIj/wmPdWDbslplvCp9HiLyMNy7IAkCehhvXlgNerOByyw+VY52cYEQ+rzKeU8NMgI2tzg0If2KRoEKQd/MWN1avOwH511x4Qrtwh32jL1X553UVFnLcPWvdaWcByYJHfprw7IbPmo=
