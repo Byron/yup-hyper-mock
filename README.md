@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/Byron/yup-hyper-mock.svg?branch=master)](https://travis-ci.org/Byron/yup-hyper-mock)
+
 `hyper-mock` is a utility library to help hyper clients with their testing. It provides types used to test hyper itself, most notably, mock connections and macros to ease their use.
 
 ## Usage
