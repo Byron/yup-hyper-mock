@@ -5,6 +5,10 @@
 //! feed a client with preset data. That way you can control exactly what it will
 //! see, confining the test-case to its own sandbox that way.
 //!
+//! All types they define are public to allow them to be used in other unit-tests.
+//! Please note that integration tests cannot share their mock types anyway, as each
+//! integration test goes into its own binary.
+//!
 //! # Usage
 //! 
 //! Set it up for use in tests in `Cargo.toml`
@@ -198,7 +202,7 @@ macro_rules! mock_connector (
         $($url:expr => $res:expr)*
     }) => (
 
-        struct $name;
+        pub struct $name;
 
         impl hyper::net::NetworkConnector for $name {
             type Stream = $crate::MockStream;
@@ -234,7 +238,7 @@ macro_rules! mock_connector_in_order (
     }) => (
 
         #[derive(Default)]
-        struct $name {
+        pub struct $name {
             streamers: Vec<String>,
             current: usize,
         }
