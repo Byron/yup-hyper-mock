@@ -27,23 +27,22 @@
 //! ```
 
 
-#![feature(old_io,io)]
+#![feature(io,net)]
 extern crate hyper;
 
 #[macro_use]
 extern crate log;
 
 use std::fmt;
-use std::old_io::{IoResult, MemReader, MemWriter, stderr, LineBufferedWriter};
-use std::old_io::stdio::StdWriter;
-use std::old_io::net::ip::SocketAddr;
+use std::net::SocketAddr;
+use std::io::{self, Read, Write, Cursor};
 
 use hyper::net::{NetworkStream, NetworkConnector};
 
 /// A `NetworkStream` compatible stream that writes into memory, and reads from memory.
 pub struct MockStream {
-    pub read: MemReader,
-    pub write: MemWriter,
+    pub read: Cursor<Vec<u8>>,
+    pub write: Vec<u8>,
 }
 
 /// A `NetworkStream` compatible stream which contains another `NetworkStream`, 
@@ -51,7 +50,7 @@ pub struct MockStream {
 /// Currently that stream will always be standard error.
 pub struct TeeStream<T> {
     pub read_write: T,
-    pub copy_to: LineBufferedWriter<StdWriter>,
+    pub copy_to: io::Stderr,
 }
 
 impl<T> Clone for TeeStream<T>
@@ -59,18 +58,18 @@ impl<T> Clone for TeeStream<T>
     fn clone(&self) -> TeeStream<T> {
         TeeStream {
             read_write: self.read_write.clone(),
-            copy_to: stderr(),
+            copy_to: io::stderr(),
         }
     }
 }
 
-impl<T> Reader for TeeStream<T>
-    where T: Reader {
-    fn read(&mut self, buf: &mut [u8]) -> IoResult<usize> {
+impl<T> Read for TeeStream<T>
+    where T: Read {
+    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         let res = self.read_write.read(buf);
         match res {
             Ok(s) => {
-                self.copy_to.write_all(&buf[..s]).ok();
+                self.copy_to.write(&buf[..s]).ok();
             }
             _ => {}
         };
@@ -78,74 +77,79 @@ impl<T> Reader for TeeStream<T>
     }
 }
 
-impl<T> Writer for TeeStream<T>
-    where T: Writer {
-    fn write_all(&mut self, msg: &[u8]) -> IoResult<()> {
-        self.copy_to.write_all(msg).ok();
-        self.read_write.write_all(msg)
+impl<T> Write for TeeStream<T>
+    where T: Write {
+    fn write(&mut self, msg: &[u8]) -> io::Result<usize> {
+        self.copy_to.write(msg).ok();
+        self.read_write.write(msg)
+    }
+    fn flush(&mut self) -> io::Result<()> {
+        self.copy_to.flush().ok();
+        self.read_write.flush()
     }
 }
 
 impl<T> NetworkStream for TeeStream<T>
     where T: NetworkStream + Send + Clone {
-    fn peer_name(&mut self) -> IoResult<SocketAddr> {
-        self.read_write.peer_name()
+    fn peer_addr(&mut self) -> io::Result<SocketAddr> {
+        self.read_write.peer_addr()
     }
 }
-
 impl Clone for MockStream {
     fn clone(&self) -> MockStream {
         MockStream {
-            read: MemReader::new(self.read.get_ref().to_vec()),
-            write: MemWriter::from_vec(self.write.get_ref().to_vec()),
+            read: Cursor::new(self.read.get_ref().clone()),
+            write: self.write.clone()
         }
-    }
-}
-
-impl PartialEq for MockStream {
-    fn eq(&self, other: &MockStream) -> bool {
-        self.read.get_ref() == other.read.get_ref() &&
-            self.write.get_ref() == other.write.get_ref()
     }
 }
 
 impl fmt::Debug for MockStream {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "MockStream {{ read: {:?}, write: {:?} }}",
-               self.read.get_ref(), self.write.get_ref())
+        write!(f, "MockStream {{ read: {:?}, write: {:?} }}", self.read.get_ref(), self.write)
     }
+}
 
+impl PartialEq for MockStream {
+    fn eq(&self, other: &MockStream) -> bool {
+        self.read.get_ref() == other.read.get_ref() && self.write == other.write
+    }
 }
 
 impl MockStream {
     pub fn new() -> MockStream {
         MockStream {
-            read: MemReader::new(vec![]),
-            write: MemWriter::new(),
+            read: Cursor::new(vec![]),
+            write: vec![],
         }
     }
 
     pub fn with_input(input: &[u8]) -> MockStream {
         MockStream {
-            read: MemReader::new(input.to_vec()),
-            write: MemWriter::new(),
+            read: Cursor::new(input.to_vec()),
+            write: vec![]
         }
     }
 }
-impl Reader for MockStream {
-    fn read(&mut self, buf: &mut [u8]) -> IoResult<usize> {
+
+impl Read for MockStream {
+    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         self.read.read(buf)
     }
 }
 
-impl Writer for MockStream {
-    fn write_all(&mut self, msg: &[u8]) -> IoResult<()> {
-        self.write.write_all(msg)
+impl Write for MockStream {
+    fn write(&mut self, msg: &[u8]) -> io::Result<usize> {
+        Write::write(&mut self.write, msg)
+    }
+
+    fn flush(&mut self) -> io::Result<()> {
+        Ok(())
     }
 }
 
 impl NetworkStream for MockStream {
-    fn peer_name(&mut self) -> IoResult<SocketAddr> {
+    fn peer_addr(&mut self) -> io::Result<SocketAddr> {
         Ok("127.0.0.1:1337".parse().unwrap())
     }
 }
@@ -157,7 +161,7 @@ pub struct MockConnector;
 impl NetworkConnector for MockConnector {
     type Stream = MockStream;
 
-    fn connect(&mut self, _host: &str, _port: u16, _scheme: &str) -> IoResult<MockStream> {
+    fn connect(&mut self, _host: &str, _port: u16, _scheme: &str) -> io::Result<MockStream> {
         Ok(MockStream::new())
     }
 }
@@ -179,12 +183,12 @@ impl<C> NetworkConnector for TeeConnector<C>
     type Stream = TeeStream<<C as NetworkConnector>::Stream>;
 
     fn connect(&mut self, _host: &str, _port: u16, _scheme: &str)
-        -> IoResult<TeeStream<<C as NetworkConnector>::Stream>> {
+        -> io::Result<TeeStream<<C as NetworkConnector>::Stream>> {
         match self.connector.connect(_host, _port, _scheme) {
             Ok(s) => {
                 Ok(TeeStream {
                         read_write: s,
-                        copy_to: stderr(),
+                        copy_to: io::stderr(),
                     }
                 )
             },
@@ -206,7 +210,7 @@ macro_rules! mock_connector (
 
         impl hyper::net::NetworkConnector for $name {
             type Stream = $crate::MockStream;
-            fn connect(&mut self, host: &str, port: u16, scheme: &str) -> ::std::old_io::IoResult<$crate::MockStream> {
+            fn connect(&mut self, host: &str, port: u16, scheme: &str) -> ::std::old_io::io::Result<$crate::MockStream> {
                 use std::collections::HashMap;
                 debug!("MockStream::connect({:?}, {:?}, {:?})", host, port, scheme);
                 let mut map = HashMap::new();
@@ -245,7 +249,7 @@ macro_rules! mock_connector_in_order (
 
         impl hyper::net::NetworkConnector for $name {
             type Stream = $crate::MockStream;
-            fn connect(&mut self, host: &str, port: u16, scheme: &str) -> ::std::old_io::IoResult<$crate::MockStream> {
+            fn connect(&mut self, host: &str, port: u16, scheme: &str) -> ::std::old_io::io::Result<$crate::MockStream> {
                 debug!("MockStream::connect({:?}, {:?}, {:?})", host, port, scheme);
 
                 if self.streamers.len() == 0 {
