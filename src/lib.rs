@@ -210,8 +210,9 @@ macro_rules! mock_connector (
 
         impl hyper::net::NetworkConnector for $name {
             type Stream = $crate::MockStream;
-            fn connect(&mut self, host: &str, port: u16, scheme: &str) -> ::std::old_io::io::Result<$crate::MockStream> {
+            fn connect(&mut self, host: &str, port: u16, scheme: &str) -> ::std::io::Result<$crate::MockStream> {
                 use std::collections::HashMap;
+                use std::io::Cursor;
                 debug!("MockStream::connect({:?}, {:?}, {:?})", host, port, scheme);
                 let mut map = HashMap::new();
                 $(map.insert($url, $res);)*
@@ -220,16 +221,14 @@ macro_rules! mock_connector (
                 let key = format!("{}://{}", scheme, host);
                 // ignore port for now
                 match map.get(&*key) {
-                    Some(res) => Ok($crate::MockStream {
-                        write: ::std::old_io::MemWriter::new(),
-                        read: ::std::old_io::MemReader::new(res.to_string().into_bytes())
+                    Some(res) => Ok(::mock::MockStream {
+                        write: vec![],
+                        read: Cursor::new(res.to_string().into_bytes()),
                     }),
                     None => panic!("{:?} doesn't know url {}", stringify!($name), key)
                 }
             }
-
         }
-
     )
 );
 
@@ -249,7 +248,8 @@ macro_rules! mock_connector_in_order (
 
         impl hyper::net::NetworkConnector for $name {
             type Stream = $crate::MockStream;
-            fn connect(&mut self, host: &str, port: u16, scheme: &str) -> ::std::old_io::io::Result<$crate::MockStream> {
+            fn connect(&mut self, host: &str, port: u16, scheme: &str) -> ::std::io::Result<$crate::MockStream> {
+                use std::io::Cursor;
                 debug!("MockStream::connect({:?}, {:?}, {:?})", host, port, scheme);
 
                 if self.streamers.len() == 0 {
@@ -261,9 +261,8 @@ macro_rules! mock_connector_in_order (
                 assert!(self.streamers.len() != 0, "Not a single streamer return value specified");
 
                 let r = Ok($crate::MockStream {
-                        write: ::std::old_io::MemWriter::new(),
-                        read: ::std::old_io::MemReader::new(self.streamers[self.current]
-                                                            .clone().into_bytes())
+                        write: vec![],
+                        read: Cursor::new(self.streamers[self.current].clone().into_bytes())
                 });
                 self.current += 1;
                 r
