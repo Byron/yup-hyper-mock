@@ -27,7 +27,6 @@
 //! ```
 
 
-#![feature(io,net)]
 extern crate hyper;
 
 #[macro_use]
