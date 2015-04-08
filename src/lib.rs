@@ -176,9 +176,9 @@ pub struct TeeConnector<C>
     pub connector: C,
 }
 
-impl<C> NetworkConnector for TeeConnector<C> 
-    where C: NetworkConnector,
-          <C as NetworkConnector>::Stream: Clone {
+impl<C, S> NetworkConnector for TeeConnector<C> 
+    where C: NetworkConnector<Stream=S>,
+          S: NetworkStream + Send + Clone {
     type Stream = TeeStream<<C as NetworkConnector>::Stream>;
 
     fn connect(&mut self, _host: &str, _port: u16, _scheme: &str)
