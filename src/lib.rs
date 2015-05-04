@@ -220,7 +220,7 @@ macro_rules! mock_connector (
                 let key = format!("{}://{}", scheme, host);
                 // ignore port for now
                 match map.get(&*key) {
-                    Some(res) => Ok(::mock::MockStream {
+                    Some(res) => Ok($crate::MockStream {
                         write: vec![],
                         read: Cursor::new(res.to_string().into_bytes()),
                     }),
