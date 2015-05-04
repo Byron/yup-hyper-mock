@@ -1,3 +1,27 @@
+<a name="v0.1.6"></a>
+## v0.1.6 (2015-05-04)
+
+
+#### Bug Fixes
+
+* **macro**  use $crate variable instead of ::mock ([b520fa77](https://github.com/Byron/yup-hyper-mock/commit/b520fa77f44262598e92149f8fd995b0543b7739), closes [#2](https://github.com/Byron/yup-hyper-mock/issues/2))
+
+#### Features
+
+* **clog**  added changelog, managed by clog ([1a1b3fa3](https://github.com/Byron/yup-hyper-mock/commit/1a1b3fa34d1c9c919a38a3a2a392422cd71c8db8))
+
+
+
+<a name="v0.1.5"></a>
+## v0.1.5 (2015-05-04)
+
+
+#### Bug Fixes
+
+* **version-up**  v0.1.5 (hyper adjustments) ([65b3baa0](https://github.com/Byron/yup-hyper-mock/commit/65b3baa0b7ffe05cf1047010d6de3273f3057ffd))
+
+
+
 
 <a name="v0.1.4"></a>
 ## v0.1.4 (2015-05-04)
