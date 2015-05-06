@@ -1,2 +1,5 @@
 [clog]
 repository = "https://github.com/Byron/yup-hyper-mock"
+
+[sections]
+Improvements = ["imp"]
