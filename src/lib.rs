@@ -160,7 +160,7 @@ pub struct MockConnector;
 impl NetworkConnector for MockConnector {
     type Stream = MockStream;
 
-    fn connect(&mut self, _host: &str, _port: u16, _scheme: &str) -> io::Result<MockStream> {
+    fn connect(&mut self, _host: &str, _port: u16, _scheme: &str) -> hyper::Result<MockStream> {
         Ok(MockStream::new())
     }
 }
@@ -182,7 +182,7 @@ impl<C, S> NetworkConnector for TeeConnector<C>
     type Stream = TeeStream<<C as NetworkConnector>::Stream>;
 
     fn connect(&mut self, _host: &str, _port: u16, _scheme: &str)
-        -> io::Result<TeeStream<<C as NetworkConnector>::Stream>> {
+        -> hyper::Result<TeeStream<<C as NetworkConnector>::Stream>> {
         match self.connector.connect(_host, _port, _scheme) {
             Ok(s) => {
                 Ok(TeeStream {
@@ -209,7 +209,7 @@ macro_rules! mock_connector (
 
         impl hyper::net::NetworkConnector for $name {
             type Stream = $crate::MockStream;
-            fn connect(&mut self, host: &str, port: u16, scheme: &str) -> ::std::io::Result<$crate::MockStream> {
+            fn connect(&mut self, host: &str, port: u16, scheme: &str) -> $crate::Result<$crate::MockStream> {
                 use std::collections::HashMap;
                 use std::io::Cursor;
                 debug!("MockStream::connect({:?}, {:?}, {:?})", host, port, scheme);
@@ -247,7 +247,7 @@ macro_rules! mock_connector_in_order (
 
         impl hyper::net::NetworkConnector for $name {
             type Stream = $crate::MockStream;
-            fn connect(&mut self, host: &str, port: u16, scheme: &str) -> ::std::io::Result<$crate::MockStream> {
+            fn connect(&mut self, host: &str, port: u16, scheme: &str) -> $crate::Result<$crate::MockStream> {
                 use std::io::Cursor;
                 debug!("MockStream::connect({:?}, {:?}, {:?})", host, port, scheme);
 
