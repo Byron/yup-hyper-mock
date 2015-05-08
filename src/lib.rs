@@ -209,7 +209,7 @@ macro_rules! mock_connector (
 
         impl hyper::net::NetworkConnector for $name {
             type Stream = $crate::MockStream;
-            fn connect(&mut self, host: &str, port: u16, scheme: &str) -> $crate::Result<$crate::MockStream> {
+            fn connect(&mut self, host: &str, port: u16, scheme: &str) -> ::hyper::Result<$crate::MockStream> {
                 use std::collections::HashMap;
                 use std::io::Cursor;
                 debug!("MockStream::connect({:?}, {:?}, {:?})", host, port, scheme);
@@ -247,7 +247,7 @@ macro_rules! mock_connector_in_order (
 
         impl hyper::net::NetworkConnector for $name {
             type Stream = $crate::MockStream;
-            fn connect(&mut self, host: &str, port: u16, scheme: &str) -> $crate::Result<$crate::MockStream> {
+            fn connect(&mut self, host: &str, port: u16, scheme: &str) -> ::hyper::Result<$crate::MockStream> {
                 use std::io::Cursor;
                 debug!("MockStream::connect({:?}, {:?}, {:?})", host, port, scheme);
 
