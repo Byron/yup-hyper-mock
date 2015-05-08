@@ -1,3 +1,17 @@
+<a name="v0.1.8"></a>
+## v0.1.8 (2015-05-08)
+
+
+#### Features
+
+* **compatibility**  Update to reflect Hyper v0.4 ([5078314f](https://github.com/Byron/yup-hyper-mock/commit/5078314f3ef33381fce92317a9f42d31f0067e7e))
+
+#### Bug Fixes
+
+* **macro**  use hyper::Result ([ae019daf](https://github.com/Byron/yup-hyper-mock/commit/ae019daf13181a570570500c17b58dbd54c8f55e))
+
+
+
 <a name="v0.1.6"></a>
 ## v0.1.6 (2015-05-04)
 
