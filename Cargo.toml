@@ -11,5 +11,11 @@ documentation = "http://byron.github.io/yup-hyper-mock"
 license = "MIT"
 
 [dependencies]
-hyper = ">= 0.4.0"
+# hyper = ">= 0.4.1"
 log = "*"
+
+# Need latest one for now until next release
+[dependencies.hyper]
+version = ">= 0.4.0"
+git = "https://github.com/hyperium/hyper"
+rev = "871f37a5605d433e5699ed2f16631001d86d7805"
