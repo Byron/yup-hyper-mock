@@ -11,5 +11,5 @@ documentation = "http://byron.github.io/yup-hyper-mock"
 license = "MIT"
 
 [dependencies]
-hyper = ">= 0.4.0"
+hyper = "> 0.4.0"
 log = "*"

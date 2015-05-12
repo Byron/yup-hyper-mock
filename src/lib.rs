@@ -160,9 +160,11 @@ pub struct MockConnector;
 impl NetworkConnector for MockConnector {
     type Stream = MockStream;
 
-    fn connect(&mut self, _host: &str, _port: u16, _scheme: &str) -> hyper::Result<MockStream> {
+    fn connect(&self, _host: &str, _port: u16, _scheme: &str) -> hyper::Result<MockStream> {
         Ok(MockStream::new())
     }
+
+    fn set_ssl_verifier(&mut self, _: hyper::net::ContextVerifier) {}
 }
 
 /// A `NetworkConnector` embedding another `NetworkConnector` instance, 
@@ -181,7 +183,7 @@ impl<C, S> NetworkConnector for TeeConnector<C>
           S: NetworkStream + Send + Clone {
     type Stream = TeeStream<<C as NetworkConnector>::Stream>;
 
-    fn connect(&mut self, _host: &str, _port: u16, _scheme: &str)
+    fn connect(&self, _host: &str, _port: u16, _scheme: &str)
         -> hyper::Result<TeeStream<<C as NetworkConnector>::Stream>> {
         match self.connector.connect(_host, _port, _scheme) {
             Ok(s) => {
@@ -194,6 +196,8 @@ impl<C, S> NetworkConnector for TeeConnector<C>
             Err(err) => Err(err),
         }
     }
+
+    fn set_ssl_verifier(&mut self, _: hyper::net::ContextVerifier) {}
 }
 
 /// This macro maps host URLs to a respective reply, which is given in plain-text.
