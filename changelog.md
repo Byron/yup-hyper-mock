@@ -1,3 +1,13 @@
+<a name="1.0.0"></a>
+## 1.0.0 (2015-05-18)
+
+
+#### Bug Fixes
+
+* **hyperup**  adapt to hyper >v0.4.0 ([388f9a0e](https://github.com/Byron/yup-hyper-mock/commit/388f9a0e3c7ed057dabe30aa209e0c05039c2274))
+
+
+
 <a name="v0.1.8"></a>
 ## v0.1.8 (2015-05-08)
 
