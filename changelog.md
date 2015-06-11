@@ -1,3 +1,13 @@
+<a name="1.0.1"></a>
+## 1.0.1 (2015-06-11)
+
+
+#### Bug Fixes
+
+* **macros**  adjust to changed hyper signatures ([be814d00](https://github.com/Byron/yup-hyper-mock/commit/be814d0087f791cb0597fce19e6093add41502c4))
+
+
+
 <a name="1.0.0"></a>
 ## 1.0.0 (2015-05-18)
 
