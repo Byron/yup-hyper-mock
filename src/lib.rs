@@ -213,7 +213,7 @@ macro_rules! mock_connector (
 
         impl hyper::net::NetworkConnector for $name {
             type Stream = $crate::MockStream;
-            fn connect(&mut self, host: &str, port: u16, scheme: &str) -> ::hyper::Result<$crate::MockStream> {
+            fn connect(&self, host: &str, port: u16, scheme: &str) -> ::hyper::Result<$crate::MockStream> {
                 use std::collections::HashMap;
                 use std::io::Cursor;
                 debug!("MockStream::connect({:?}, {:?}, {:?})", host, port, scheme);
@@ -231,6 +231,8 @@ macro_rules! mock_connector (
                     None => panic!("{:?} doesn't know url {}", stringify!($name), key)
                 }
             }
+
+            fn set_ssl_verifier(&mut self, _: hyper::net::ContextVerifier) {}
         }
     )
 );
@@ -242,34 +244,38 @@ macro_rules! mock_connector_in_order (
     ($name:ident {
         $( $res:expr )*
     }) => (
+        use std::cell::{Cell, RefCell};
 
         #[derive(Default)]
         pub struct $name {
-            streamers: Vec<String>,
-            current: usize,
+            streamers: RefCell<Vec<String>>,
+            current: Cell<usize>,
         }
 
         impl hyper::net::NetworkConnector for $name {
             type Stream = $crate::MockStream;
-            fn connect(&mut self, host: &str, port: u16, scheme: &str) -> ::hyper::Result<$crate::MockStream> {
+            fn connect(&self, host: &str, port: u16, scheme: &str) -> ::hyper::Result<$crate::MockStream> {
                 use std::io::Cursor;
                 debug!("MockStream::connect({:?}, {:?}, {:?})", host, port, scheme);
 
-                if self.streamers.len() == 0 {
+                if self.streamers.borrow().len() == 0 {
                     let mut v = Vec::new();
                     $(v.push($res.to_string());)*
-                    self.streamers = v;
-                    self.current = 0;
+                    self.streamers.borrow_mut().extend(v.into_iter());
+                    self.current.set(0);
                 }
-                assert!(self.streamers.len() != 0, "Not a single streamer return value specified");
+                assert!(self.streamers.borrow().len() != 0, "Not a single streamer return value specified");
 
                 let r = Ok($crate::MockStream {
                         write: vec![],
-                        read: Cursor::new(self.streamers[self.current].clone().into_bytes())
+                        read: Cursor::new(self.streamers.borrow()[self.current.get()]
+                                                                 .clone().into_bytes())
                 });
-                self.current += 1;
+                self.current.set(self.current.get() + 1);
                 r
             }
+
+            fn set_ssl_verifier(&mut self, _: hyper::net::ContextVerifier) {}
         }
     )
 );
