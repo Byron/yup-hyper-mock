@@ -8,16 +8,16 @@ struct MySequentialConnector(SequentialConnector);
 
 impl Default for MySequentialConnector {
     fn default() -> MySequentialConnector {
-        let c = MySequentialConnector(Default::default());
-        c.0.content.borrow_mut().push("HTTP/1.1 200 OK\r\n\
-                                 Server: BOGUS\r\n\
-                                 \r\n\
-                                 1".to_string());
+        let mut c = MySequentialConnector(Default::default());
+        c.0.content.push("HTTP/1.1 200 OK\r\n\
+                         Server: BOGUS\r\n\
+                         \r\n\
+                         1".to_string());
 
-        c.0.content.borrow_mut().push("HTTP/1.1 200 OK\r\n\
-                                 Server: BOGUS\r\n\
-                                 \r\n\
-                                 2".to_string());
+        c.0.content.push("HTTP/1.1 200 OK\r\n\
+                         Server: BOGUS\r\n\
+                         \r\n\
+                         2".to_string());
         c
     }
 }

@@ -35,7 +35,7 @@ extern crate log;
 use std::fmt;
 use std::net::SocketAddr;
 use std::io::{self, Read, Write, Cursor};
-use std::cell::{RefCell, Cell};
+use std::cell::Cell;
 use std::collections::HashMap;
 
 use hyper::net::{NetworkStream, NetworkConnector};
@@ -274,8 +274,8 @@ macro_rules! mock_connector_in_order (
 
         impl Default for $name {
             fn default() -> $name {
-                let c = $name(Default::default());
-                $(c.0.content.borrow_mut().push($res.to_string());)*
+                let mut c = $name(Default::default());
+                $(c.0.content.push($res.to_string());)*
                 c
             }
         }
@@ -298,8 +298,7 @@ macro_rules! mock_connector_in_order (
 /// to determine the data it should be initialized with
 #[derive(Default)]
 pub struct SequentialConnector {
-    // TODO(ST): no refcell
-    pub content: RefCell<Vec<String>>,
+    pub content: Vec<String>,
     current: Cell<usize>,
 }
 
@@ -310,12 +309,11 @@ impl hyper::net::NetworkConnector for SequentialConnector {
         use std::io::Cursor;
         debug!("SequentialConnector::connect({:?}, {:?}, {:?})", host, port, scheme);
 
-        assert!(self.content.borrow().len() != 0, "Not a single streamer return value specified");
+        assert!(self.content.len() != 0, "Not a single streamer return value specified");
 
         let r = Ok(MockStream {
                 write: vec![],
-                read: Cursor::new(self.content.borrow()[self.current.get()]
-                                                              .clone().into_bytes())
+                read: Cursor::new(self.content[self.current.get()].clone().into_bytes())
         });
         self.current.set(self.current.get() + 1);
         r
