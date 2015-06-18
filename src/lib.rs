@@ -245,38 +245,25 @@ macro_rules! mock_connector_in_order (
     ($name:ident {
         $( $res:expr )*
     }) => (
-        use std::cell::{Cell, RefCell};
+        pub struct $name($crate::SequentialConnector);
 
-        #[derive(Default)]
-        pub struct $name {
-            streamers: RefCell<Vec<String>>,
-            current: Cell<usize>,
+        impl Default for $name {
+            fn default() -> $name {
+                let c = $name(Default::default());
+                $(c.0.content.borrow_mut().push($res.to_string());)*
+                c
+            }
         }
 
         impl hyper::net::NetworkConnector for $name {
             type Stream = $crate::MockStream;
             fn connect(&self, host: &str, port: u16, scheme: &str) -> ::hyper::Result<$crate::MockStream> {
-                use std::io::Cursor;
-                debug!("MockStream::connect({:?}, {:?}, {:?})", host, port, scheme);
-
-                if self.streamers.borrow().len() == 0 {
-                    let mut v = Vec::new();
-                    $(v.push($res.to_string());)*
-                    self.streamers.borrow_mut().extend(v.into_iter());
-                    self.current.set(0);
-                }
-                assert!(self.streamers.borrow().len() != 0, "Not a single streamer return value specified");
-
-                let r = Ok($crate::MockStream {
-                        write: vec![],
-                        read: Cursor::new(self.streamers.borrow()[self.current.get()]
-                                                                 .clone().into_bytes())
-                });
-                self.current.set(self.current.get() + 1);
-                r
+                self.0.connect(host, port, scheme)
             }
 
-            fn set_ssl_verifier(&mut self, _: hyper::net::ContextVerifier) {}
+            fn set_ssl_verifier(&mut self, verifier: hyper::net::ContextVerifier) {
+                self.0.set_ssl_verifier(verifier)
+            }
         }
     )
 );
