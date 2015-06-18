@@ -1,12 +1,12 @@
-<a name="v1.1.0"></a>
-## v1.1.0 (2015-06-18)
+<a name="v1.2.0"></a>
+## v1.2.0 (2015-06-18)
 
 
 #### Features
 
-* **lib**  added SequentialConnector type ([553c9dcb](https://github.com/Byron/yup-hyper-mock/commit/553c9dcb7c7f156e706c36ff7029464b8950df4d))
-
-
+* **lib**  
+  * added HostToReplyConnector type ([66763316](https://github.com/Byron/yup-hyper-mock/commit/667633168574c731ec0aa1f0266aa3be79e5d8d6))
+  * added SequentialConnector type ([553c9dcb](https://github.com/Byron/yup-hyper-mock/commit/553c9dcb7c7f156e706c36ff7029464b8950df4d))
 
 <a name="1.0.1"></a>
 ## 1.0.1 (2015-06-11)
