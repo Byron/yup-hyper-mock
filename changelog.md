@@ -1,3 +1,13 @@
+<a name="v1.1.0"></a>
+## v1.1.0 (2015-06-18)
+
+
+#### Features
+
+* **lib**  added SequentialConnector type ([553c9dcb](https://github.com/Byron/yup-hyper-mock/commit/553c9dcb7c7f156e706c36ff7029464b8950df4d))
+
+
+
 <a name="1.0.1"></a>
 ## 1.0.1 (2015-06-11)
 
