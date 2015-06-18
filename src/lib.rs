@@ -36,6 +36,7 @@ use std::fmt;
 use std::net::SocketAddr;
 use std::io::{self, Read, Write, Cursor};
 use std::cell::{RefCell, Cell};
+use std::collections::HashMap;
 
 use hyper::net::{NetworkStream, NetworkConnector};
 
@@ -210,33 +211,57 @@ macro_rules! mock_connector (
         $($url:expr => $res:expr)*
     }) => (
 
-        pub struct $name;
+        pub struct $name($crate::HostToReplyConnector);
+
+        impl Default for $name {
+            fn default() -> $name {
+                let mut c = $name(Default::default());
+                $(c.0.m.insert($url.to_string(), $res.to_string());)*
+                c
+            }
+        }
 
         impl hyper::net::NetworkConnector for $name {
             type Stream = $crate::MockStream;
+
             fn connect(&self, host: &str, port: u16, scheme: &str) -> ::hyper::Result<$crate::MockStream> {
-                use std::collections::HashMap;
-                use std::io::Cursor;
-                debug!("MockStream::connect({:?}, {:?}, {:?})", host, port, scheme);
-                let mut map = HashMap::new();
-                $(map.insert($url, $res);)*
-
-
-                let key = format!("{}://{}", scheme, host);
-                // ignore port for now
-                match map.get(&*key) {
-                    Some(res) => Ok($crate::MockStream {
-                        write: vec![],
-                        read: Cursor::new(res.to_string().into_bytes()),
-                    }),
-                    None => panic!("{:?} doesn't know url {}", stringify!($name), key)
-                }
+                self.0.connect(host, port, scheme)
             }
 
-            fn set_ssl_verifier(&mut self, _: hyper::net::ContextVerifier) {}
+            fn set_ssl_verifier(&mut self, verifier: hyper::net::ContextVerifier) {
+                self.0.set_ssl_verifier(verifier)
+            }
         }
     )
 );
+
+/// A `NetworkConnector` which provides a single reply stream per host.
+///
+/// The mapping is done from full host url (e.g. `http://host.name.com`) to the 
+/// singular reply the host is supposed to make.
+#[derive(Default)]
+pub struct HostToReplyConnector {
+    pub m: HashMap<String, String>
+}
+
+impl hyper::net::NetworkConnector for HostToReplyConnector {
+    type Stream = MockStream;
+
+    fn connect(&self, host: &str, port: u16, scheme: &str) -> ::hyper::Result<MockStream> {
+        debug!("HostToReplyConnector::connect({:?}, {:?}, {:?})", host, port, scheme);
+        let key = format!("{}://{}", scheme, host);
+        // ignore port for now
+        match self.m.get(&key) {
+            Some(res) => Ok(MockStream {
+                write: vec![],
+                read: Cursor::new(res.clone().into_bytes()),
+            }),
+            None => panic!("HostToReplyConnector doesn't know url {}", key)
+        }
+    }
+
+    fn set_ssl_verifier(&mut self, _: hyper::net::ContextVerifier) {}
+}
 
 /// This macro yields all given server replies in the order they are given.
 /// The destination host URL doesn't matter at all.
@@ -273,6 +298,7 @@ macro_rules! mock_connector_in_order (
 /// to determine the data it should be initialized with
 #[derive(Default)]
 pub struct SequentialConnector {
+    // TODO(ST): no refcell
     pub content: RefCell<Vec<String>>,
     current: Cell<usize>,
 }

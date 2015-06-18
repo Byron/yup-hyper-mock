@@ -38,7 +38,7 @@ mock_connector!(MockRedirectPolicy {
 /// Just to test the result of `mock_connector!` - this test was copied from hyper.
 #[test]
 fn test_redirect_followall() {
-    let mut client = hyper::client::Client::with_connector(MockRedirectPolicy);
+    let mut client = hyper::client::Client::with_connector(MockRedirectPolicy::default());
     client.set_redirect_policy(hyper::client::RedirectPolicy::FollowAll);
 
     let res = client.get("http://127.0.0.1").send().unwrap();
