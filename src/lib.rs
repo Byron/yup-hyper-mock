@@ -35,6 +35,7 @@ extern crate log;
 use std::fmt;
 use std::net::SocketAddr;
 use std::io::{self, Read, Write, Cursor};
+use std::cell::{RefCell, Cell};
 
 use hyper::net::{NetworkStream, NetworkConnector};
 
@@ -279,4 +280,36 @@ macro_rules! mock_connector_in_order (
         }
     )
 );
+
+
+/// A connector which requires you to implement the `Default` trait, allowing you
+/// to determine the data it should be initialized with
+#[derive(Default)]
+pub struct SequentialConnector {
+    pub content: RefCell<Vec<String>>,
+    current: Cell<usize>,
+}
+
+impl hyper::net::NetworkConnector for SequentialConnector {
+    type Stream = MockStream;
+
+    fn connect(&self, host: &str, port: u16, scheme: &str) -> ::hyper::Result<MockStream> {
+        use std::io::Cursor;
+        debug!("SequentialConnector::connect({:?}, {:?}, {:?})", host, port, scheme);
+
+        assert!(self.content.borrow().len() != 0, "Not a single streamer return value specified");
+
+        let r = Ok(MockStream {
+                write: vec![],
+                read: Cursor::new(self.content.borrow()[self.current.get()]
+                                                              .clone().into_bytes())
+        });
+        self.current.set(self.current.get() + 1);
+        r
+    }
+
+    fn set_ssl_verifier(&mut self, _: hyper::net::ContextVerifier) {}
+}
+
+
 
