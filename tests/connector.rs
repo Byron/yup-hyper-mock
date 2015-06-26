@@ -28,8 +28,6 @@ impl hyper::net::NetworkConnector for MySequentialConnector {
     fn connect(&self, host: &str, port: u16, scheme: &str) -> ::hyper::Result<MockStream> {
         self.0.connect(host, port, scheme)
     }
-
-    fn set_ssl_verifier(&mut self, _: hyper::net::ContextVerifier) {}
 }
 
 struct MyHostToReplyConnector(HostToReplyConnector);
@@ -65,15 +63,13 @@ impl hyper::net::NetworkConnector for MyHostToReplyConnector {
     fn connect(&self, host: &str, port: u16, scheme: &str) -> ::hyper::Result<MockStream> {
         self.0.connect(host, port, scheme)
     }
-
-    fn set_ssl_verifier(&mut self, _: hyper::net::ContextVerifier) {}
 }
 
 #[test]
 fn test_sequential_mock() {
     use std::io::Read;
 
-    let mut client = hyper::client::Client::with_connector(MySequentialConnector::default());
+    let client = hyper::client::Client::with_connector(MySequentialConnector::default());
 
     let res = client.get("http://127.0.0.1").send().unwrap();
     assert_eq!(res.bytes().next().unwrap().unwrap(), b'1');

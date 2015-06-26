@@ -35,7 +35,7 @@ extern crate log;
 use std::fmt;
 use std::net::SocketAddr;
 use std::io::{self, Read, Write, Cursor};
-use std::cell::Cell;
+use std::sync::Mutex;
 use std::collections::HashMap;
 
 use hyper::net::{NetworkStream, NetworkConnector};
@@ -165,8 +165,6 @@ impl NetworkConnector for MockConnector {
     fn connect(&self, _host: &str, _port: u16, _scheme: &str) -> hyper::Result<MockStream> {
         Ok(MockStream::new())
     }
-
-    fn set_ssl_verifier(&mut self, _: hyper::net::ContextVerifier) {}
 }
 
 /// A `NetworkConnector` embedding another `NetworkConnector` instance, 
@@ -198,8 +196,6 @@ impl<C, S> NetworkConnector for TeeConnector<C>
             Err(err) => Err(err),
         }
     }
-
-    fn set_ssl_verifier(&mut self, _: hyper::net::ContextVerifier) {}
 }
 
 /// This macro maps host URLs to a respective reply, which is given in plain-text.
@@ -226,10 +222,6 @@ macro_rules! mock_connector (
 
             fn connect(&self, host: &str, port: u16, scheme: &str) -> ::hyper::Result<$crate::MockStream> {
                 self.0.connect(host, port, scheme)
-            }
-
-            fn set_ssl_verifier(&mut self, verifier: hyper::net::ContextVerifier) {
-                self.0.set_ssl_verifier(verifier)
             }
         }
     )
@@ -259,8 +251,6 @@ impl hyper::net::NetworkConnector for HostToReplyConnector {
             None => panic!("HostToReplyConnector doesn't know url {}", key)
         }
     }
-
-    fn set_ssl_verifier(&mut self, _: hyper::net::ContextVerifier) {}
 }
 
 /// This macro yields all given server replies in the order they are given.
@@ -285,10 +275,6 @@ macro_rules! mock_connector_in_order (
             fn connect(&self, host: &str, port: u16, scheme: &str) -> ::hyper::Result<$crate::MockStream> {
                 self.0.connect(host, port, scheme)
             }
-
-            fn set_ssl_verifier(&mut self, verifier: hyper::net::ContextVerifier) {
-                self.0.set_ssl_verifier(verifier)
-            }
         }
     )
 );
@@ -296,10 +282,18 @@ macro_rules! mock_connector_in_order (
 
 /// A connector which requires you to implement the `Default` trait, allowing you
 /// to determine the data it should be initialized with
-#[derive(Default)]
 pub struct SequentialConnector {
     pub content: Vec<String>,
-    current: Cell<usize>,
+    current: Mutex<usize>,
+}
+
+impl Default for SequentialConnector {
+    fn default() -> Self {
+        SequentialConnector {
+            content: Vec::new(),
+            current: Mutex::new(0)
+        }
+    }
 }
 
 impl hyper::net::NetworkConnector for SequentialConnector {
@@ -313,13 +307,11 @@ impl hyper::net::NetworkConnector for SequentialConnector {
 
         let r = Ok(MockStream {
                 write: vec![],
-                read: Cursor::new(self.content[self.current.get()].clone().into_bytes())
+                read: Cursor::new(self.content[*self.current.lock().unwrap()].clone().into_bytes())
         });
-        self.current.set(self.current.get() + 1);
+        *self.current.lock().unwrap() += 1;
         r
     }
-
-    fn set_ssl_verifier(&mut self, _: hyper::net::ContextVerifier) {}
 }
 
 
