@@ -1,3 +1,13 @@
+<a name="50199133"></a>
+## 50199133 (2015-06-26)
+
+
+#### Bug Fixes
+
+* **hyper-up**  work with hyper 0.6.0 ([50199133](https://github.com/Byron/yup-hyper-mock/commit/501991335dde3c88e845277e3772708cc1f5eef0))
+
+
+
 <a name="v1.2.0"></a>
 ## v1.2.0 (2015-06-18)
 
