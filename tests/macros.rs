@@ -49,7 +49,7 @@ fn test_redirect_followall() {
 fn test_sequential_mock() {
     use std::io::Read;
 
-    let mut client = hyper::client::Client::with_connector(MockSequential::default());
+    let client = hyper::client::Client::with_connector(MockSequential::default());
 
     let res = client.get("http://127.0.0.1").send().unwrap();
     assert_eq!(res.bytes().next().unwrap().unwrap(), b'1');
