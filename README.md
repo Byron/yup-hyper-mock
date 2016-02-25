@@ -38,14 +38,15 @@ mod tests {
                                      Server: mock3\r\n\
                                      \r\n\
                                     "
+    });
 
     #[test]
     fn test_redirect_followall() {
-        let mut client = hyper::Client::with_connector(MockRedirectPolicy);
-        client.set_redirect_policy(hyper::RedirectPolicy::FollowAll);
+        let mut client = hyper::Client::with_connector(MockRedirectPolicy::default());
+        client.set_redirect_policy(hyper::client::RedirectPolicy::FollowAll);
 
         let res = client.get("http://127.0.0.1").send().unwrap();
-        assert_eq!(res.headers.get(), Some(&hyper::Server("mock3".to_string())));
+        assert_eq!(res.headers.get(), Some(&hyper::header::Server("mock3".to_owned())));
     }
 }
 ```
