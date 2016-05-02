@@ -14,7 +14,7 @@ log = "*"  # log macros are used within yup-hyper-mock
 Link it in case you are testing only in your `src/(lib.rs|main.rs)`
 ```Rust
 #[cfg(test)] #[macro_use]
-extern crate "yup-hyper-mock" as hyper_mock
+extern crate yup_hyper_mock as hyper_mock
 ```
 
 In your tests module
