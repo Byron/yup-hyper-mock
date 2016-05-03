@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `yup_hyper_mock` crate.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, yup_hyper_mock">
+
+    <title>yup_hyper_mock - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'></p><script>window.sidebarCurrent = {name: 'yup_hyper_mock', ty: 'mod', relpath: '../'};</script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content mod">
+<h1 class='fqn'><span class='in-band'>Crate <a class='mod' href=''>yup_hyper_mock</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-0' class='srclink' href='../src/yup_hyper_mock/src/lib.rs.html#1-332' title='goto source code'>[src]</a></span></h1>
+<div class='docblock'><p>Contains various utility types and macros useful for testing hyper clients.</p>
+
+<h1 id='macros' class='section-header'><a href='#macros'>Macros</a></h1>
+<p>The <code>mock_connector!</code> and <code>mock_connector_in_order!</code> macros can be used to 
+feed a client with preset data. That way you can control exactly what it will
+see, confining the test-case to its own sandbox that way.</p>
+
+<p>All types they define are public to allow them to be used in other unit-tests.
+Please note that integration tests cannot share their mock types anyway, as each
+integration test goes into its own binary.</p>
+
+<h1 id='usage' class='section-header'><a href='#usage'>Usage</a></h1>
+<p>Set it up for use in tests in <code>Cargo.toml</code></p>
+
+<pre><code class="language-toml">[dev-dependencies]
+yup-hyper-mock = &quot;*&quot;
+log = &quot;*&quot;  # log macros are used within yup-hyper-mock
+</code></pre>
+
+<p>Link it into your <code>src/(lib.rs|main.rs)</code></p>
+
+<pre><code class="language-Rust">#[cfg(test)] #[macro_use]
+extern crate &quot;yup-hyper-mock&quot; as hyper_mock
+</code></pre>
+</div><h2 id='macros-1' class='section-header'><a href="#macros-1">Macros</a></h2>
+<table>
+                    <tr class=' module-item'>
+                        <td><a class='macro' href='macro.mock_connector!.html'
+                               title='yup_hyper_mock::mock_connector!'>mock_connector!</a></td>
+                        <td class='docblock short'>
+                             <p>This macro maps host URLs to a respective reply, which is given in plain-text.
+It ignores, but stores, everything that is written to it. However, the stored
+values are not accessible just yet.</p>
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='macro' href='macro.mock_connector_in_order!.html'
+                               title='yup_hyper_mock::mock_connector_in_order!'>mock_connector_in_order!</a></td>
+                        <td class='docblock short'>
+                             <p>This macro yields all given server replies in the order they are given.
+The destination host URL doesn&#39;t matter at all.</p>
+                        </td>
+                    </tr>
+                </table><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.HostToReplyConnector.html'
+                               title='yup_hyper_mock::HostToReplyConnector'>HostToReplyConnector</a></td>
+                        <td class='docblock short'>
+                             <p>A <code>NetworkConnector</code> which provides a single reply stream per host.</p>
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.MockConnector.html'
+                               title='yup_hyper_mock::MockConnector'>MockConnector</a></td>
+                        <td class='docblock short'>
+                             <p>A <code>NetworkConnector</code> which creates <code>MockStream</code> instances exclusively.
+It may be useful to intercept writes.</p>
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.MockStream.html'
+                               title='yup_hyper_mock::MockStream'>MockStream</a></td>
+                        <td class='docblock short'>
+                             <p>A <code>NetworkStream</code> compatible stream that writes into memory, and reads from memory.</p>
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.SequentialConnector.html'
+                               title='yup_hyper_mock::SequentialConnector'>SequentialConnector</a></td>
+                        <td class='docblock short'>
+                             <p>A connector which requires you to implement the <code>Default</code> trait, allowing you
+to determine the data it should be initialized with</p>
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.TeeConnector.html'
+                               title='yup_hyper_mock::TeeConnector'>TeeConnector</a></td>
+                        <td class='docblock short'>
+                             <p>A <code>NetworkConnector</code> embedding another <code>NetworkConnector</code> instance,
+and sets it up to write all reads and writes to standard error as well.</p>
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.TeeStream.html'
+                               title='yup_hyper_mock::TeeStream'>TeeStream</a></td>
+                        <td class='docblock short'>
+                             <p>A <code>NetworkStream</code> compatible stream which contains another <code>NetworkStream</code>,
+whose traffic will be written to another stream.
+Currently that stream will always be standard error.</p>
+                        </td>
+                    </tr>
+                </table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "yup_hyper_mock";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    
+    <script defer src="../search-index.js"></script>
+</body>
+</html>
