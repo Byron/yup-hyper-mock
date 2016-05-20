@@ -1,5 +1,12 @@
-<a name="50199133"></a>
-## 50199133 (2015-06-26)
+<a name="v1.3.3"></a>
+### v1.3.3 (2016-05-20)
+
+* **dependency upgrades** - update to latest versions
+
+
+
+<a name="v1.3.2"></a>
+## v1.3.2 (2015-06-26)
 
 
 #### Bug Fixes
