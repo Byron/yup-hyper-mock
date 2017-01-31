@@ -1,3 +1,9 @@
+<a name="v2.0.0"></a>
+## v2.0.0 (2017-01-31)
+
+Upgrade to hyper v0.10 - this might break dependencies, thus the major version jump.
+
+
 <a name="50199133"></a>
 ## 50199133 (2015-06-26)
 
