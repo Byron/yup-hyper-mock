@@ -224,7 +224,7 @@ macro_rules! mock_connector (
         $($url:expr => $res:expr)*
     }) => (
 
-        pub struct $name($crate::HostToReplyConnector);
+        struct $name($crate::HostToReplyConnector);
 
         impl Default for $name {
             fn default() -> $name {
@@ -277,7 +277,7 @@ macro_rules! mock_connector_in_order (
     ($name:ident {
         $( $res:expr )*
     }) => (
-        pub struct $name($crate::SequentialConnector);
+        struct $name($crate::SequentialConnector);
 
         impl Default for $name {
             fn default() -> $name {
