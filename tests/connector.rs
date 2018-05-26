@@ -1,8 +1,14 @@
 //! Test usage of connectors which work entirely without macros
 extern crate hyper;
 extern crate yup_hyper_mock;
+extern crate tokio_core;
+extern crate futures;
 
-use yup_hyper_mock::{SequentialConnector, HostToReplyConnector, MockStream};
+use tokio_core::reactor::Core;
+use futures::future::Future;
+ use futures::Stream;
+
+use yup_hyper_mock::{SequentialConnector, HostToReplyConnector};
 
 struct MySequentialConnector(SequentialConnector);
 
@@ -22,11 +28,14 @@ impl Default for MySequentialConnector {
     }
 }
 
-impl hyper::net::NetworkConnector for MySequentialConnector {
-    type Stream = MockStream;
+impl hyper::client::Service for MySequentialConnector {
+    type Request = hyper::Uri;
+    type Response = tokio_core::net::TcpStream;
+    type Error = std::io::Error;
+    type Future = yup_hyper_mock::HttpConnecting;
 
-    fn connect(&self, host: &str, port: u16, scheme: &str) -> ::hyper::Result<MockStream> {
-        self.0.connect(host, port, scheme)
+    fn call(&self, _uri: Self::Request) -> Self::Future {
+        unimplemented!();
     }
 }
 
@@ -57,34 +66,46 @@ impl Default for MyHostToReplyConnector {
     }
 }
 
-impl hyper::net::NetworkConnector for MyHostToReplyConnector {
-    type Stream = MockStream;
+impl hyper::client::Service for MyHostToReplyConnector {
+    type Request = hyper::Uri;
+    type Response = tokio_core::net::TcpStream;
+    type Error = std::io::Error;
+    type Future = yup_hyper_mock::HttpConnecting;
 
-    fn connect(&self, host: &str, port: u16, scheme: &str) -> ::hyper::Result<MockStream> {
-        self.0.connect(host, port, scheme)
+    fn call(&self, _uri: Self::Request) -> Self::Future {
+        unimplemented!();
     }
+}
+
+fn result_to_bytes(res: hyper::Response) -> u8
+{
+    res.body().concat2().wait().unwrap().first().unwrap().clone()
 }
 
 #[test]
 fn test_sequential_mock() {
-    use std::io::Read;
+    let core = Core::new().unwrap();
+    let client = hyper::client::Client::configure()
+        .connector(MySequentialConnector::default())
+        .build(&core.handle());
 
-    let client = hyper::client::Client::with_connector(MySequentialConnector::default());
+    let res = client.get("http://127.0.0.1".parse().unwrap()).wait().unwrap();
+    assert_eq!(result_to_bytes(res), b'1');
 
-    let res = client.get("http://127.0.0.1").send().unwrap();
-    assert_eq!(res.bytes().next().unwrap().unwrap(), b'1');
-
-    let res = client.get("http://127.0.0.1").send().unwrap();
-    assert_eq!(res.bytes().next().unwrap().unwrap(), b'2');
+    let res = client.get("http://127.0.0.1".parse().unwrap()).wait().unwrap();
+    assert_eq!(result_to_bytes(res), b'2');
 }
 
 
 /// Just to test the result of `mock_connector!` - this test was copied from hyper.
 #[test]
 fn test_redirect_followall() {
-    let mut client = hyper::client::Client::with_connector(MyHostToReplyConnector::default());
-    client.set_redirect_policy(hyper::client::RedirectPolicy::FollowAll);
+    let core = Core::new().unwrap();
+    let client = hyper::client::Client::configure()
+        .connector(MyHostToReplyConnector::default())
+        .build(&core.handle());
+    //client.set_redirect_policy(hyper::client::RedirectPolicy::FollowAll);
 
-    let res = client.get("http://127.0.0.1").send().unwrap();
-    assert_eq!(res.headers.get(), Some(&hyper::header::Server("mock3".to_owned())));
+    let res = client.get("http://127.0.0.1".parse().unwrap()).wait().unwrap();
+    assert_eq!(res.headers().get(), Some(&hyper::header::Server::new("mock3".to_owned())));
 }

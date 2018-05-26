@@ -1,5 +1,4 @@
 [package]
-
 name = "yup-hyper-mock"
 version = "2.0.0"
 authors = ["Sean McArthur <sean.monstar@gmail.com>",
@@ -11,5 +10,9 @@ documentation = "http://byron.github.io/yup-hyper-mock"
 license = "MIT"
 
 [dependencies]
-hyper = "0.10"
-log = ">= 0.1"
+hyper = "0.11"
+log = ">= 0.2"
+futures = "0.1.17"
+tokio-io = "0.1"
+tokio-core = "0.1.11"
+bytes = "0.4.4"
