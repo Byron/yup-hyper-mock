@@ -1,3 +1,6 @@
+// FIXME
+#![allow(dead_code, unused_imports, unreachable_code, unused_variables)]
+
 //! Contains various utility types and macros useful for testing hyper clients. 
 //! 
 //! # Macros
@@ -28,24 +31,45 @@
 
 
 extern crate hyper;
+#[macro_use]
 extern crate futures;
 extern crate tokio_io;
 #[macro_use]
 extern crate tokio_core;
+extern crate tokio_service;
 extern crate bytes;
+extern crate tokio_mockstream;
+extern crate tokio_reactor;
+extern crate mio;
 
 #[macro_use]
 extern crate log;
 
 //use std::fmt;
 //use std::net::SocketAddr;
-//use std::io::{self, Read, Write, Cursor};
+use std::io::{self, Read, Write, Cursor};
 use std::sync::Mutex;
 use std::collections::HashMap;
-//use tokio_core::net::TcpStream;
 //use std::time::Duration;
+use futures::Future;
+use futures::future::poll_fn;
+use futures::Async;
+use tokio_io::{AsyncRead, AsyncWrite};
+use futures::task;
+use tokio_reactor::PollEvented;
+use mio::event::Evented;
+use mio::PollOpt;
+use mio::Poll;
+use mio::Ready;
+use mio::Token;
+use mio::SetReadiness;
+use mio::Registration;
+use std::thread;
 
-mod hyper_mocks;
+// mod hyper_mocks;
+// pub type AsyncMockCursor = hyper_mocks::AsyncIo<hyper_mocks::MockCursor>;
+// pub use hyper_mocks::{Duplex, MockConnector};
+use tokio_mockstream::MockStream;
 
 /// This macro maps host URLs to a respective reply, which is given in plain-text.
 /// It ignores, but stores, everything that is written to it. However, the stored
@@ -66,11 +90,11 @@ macro_rules! mock_connector (
             }
         }
 
-        impl hyper::client::Service for $name {
+        impl tokio_service::Service for $name {
             type Request = hyper::Uri;
             type Response = tokio_core::net::TcpStream;
             type Error = std::io::Error;
-            type Future = $crate::HttpConnecting;
+            type Future = Box<Future<Item=Self::Response, Error=Self::Error>>;
 
             fn call(&self, _uri: Self::Request) -> Self::Future {
                 unimplemented!();
@@ -88,26 +112,144 @@ pub struct HostToReplyConnector {
     pub m: HashMap<String, String>
 }
 
-#[must_use = "futures do nothing unless polled"]
-pub struct HttpConnecting {
+pub struct MockHttpStream {
+    data: Vec<u8>,
+    pos: usize,
+    ready_for_response: bool,
+    task: Option<task::Task>,
+    registration: Registration,
 }
 
-impl futures::Future for HttpConnecting {
-    type Item = tokio_core::net::TcpStream;
-    type Error = std::io::Error;
+pub struct MockPollStream {
+    stream: PollEvented<MockHttpStream>,
+    set_readiness: SetReadiness
+}
 
-    fn poll(&mut self) -> futures::Poll<Self::Item, Self::Error> {
-        unimplemented!();
+impl MockPollStream {
+    fn new(data: Vec<u8>) -> MockPollStream {
+        let (registration, set_readiness) = Registration::new2();
+        let m = MockHttpStream {
+            data: data,
+            pos: 0,
+            ready_for_response: false,
+            task: None,
+            registration: registration
+        };
+        set_readiness.set_readiness(Ready::writable()).unwrap();
+        MockPollStream {
+            stream: PollEvented::new(m),
+            set_readiness: set_readiness
+        }
     }
 }
 
-impl hyper::client::Service for HostToReplyConnector {
-    type Request = hyper::Uri;
-    type Response = tokio_core::net::TcpStream;
-    type Error = std::io::Error;
-    type Future = HttpConnecting;
+impl Evented for MockHttpStream {
+    fn register(&self, poll: &Poll, token: Token, interest: Ready, opts: PollOpt)
+        -> io::Result<()>
+    {
+        trace!("Token: {:?}", token);
+        Ok(self.registration.register(poll, token, interest, opts)?)
+    }
 
-    fn call(&self, uri: Self::Request) -> Self::Future {
+    fn reregister(&self, poll: &Poll, token: Token, interest: Ready, opts: PollOpt)
+        -> io::Result<()>
+    {
+        Ok(self.registration.reregister(poll, token, interest, opts)?)
+    }
+
+    fn deregister(&self, poll: &Poll) -> io::Result<()> {
+        self.registration.deregister(poll)?;
+        Ok(())
+    }
+}
+
+impl Read for MockHttpStream {
+    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+        if !self.ready_for_response {
+            debug!("Not ready for read yet");
+            self.task = Some(task::current());
+            return Err(io::ErrorKind::WouldBlock.into());
+        }
+        trace!("Buffer size: {}, Data size: {}, Pos: {}", buf.len(), self.data.len(), self.pos);
+        let n = if buf.len() < (self.data.len()-self.pos) { buf.len() } else { self.data.len()-self.pos };
+        if n > 0 {
+            for i in 0..n {
+                buf[i] = self.data[self.pos];
+                self.pos+=1;
+            }
+        }
+        trace!("Read {} bytes: '{}'", n, std::str::from_utf8(&buf[..n]).unwrap_or("<bad utf-8>"));
+        self.task = Some(task::current());
+        Ok(n)
+    }
+}
+
+impl AsyncRead for MockHttpStream {}
+
+impl Read for MockPollStream {
+    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+        let ret = self.stream.read(buf);
+        if let Ok(ref val) = ret {
+            //self.set_readiness.set_readiness(Ready::empty())?;
+            //let sr = self.set_readiness.clone();
+            thread::spawn(move || {
+                thread::sleep_ms(1000);
+                trace!("Mark as ready");
+                //sr.set_readiness(Ready::readable()).unwrap();
+            });
+        }
+        ret
+    }
+}
+
+impl AsyncRead for MockPollStream {}
+
+impl Write for MockHttpStream {
+    fn write(&mut self, data: &[u8]) -> io::Result<usize> {
+        debug!("Request data: {}", std::str::from_utf8(data).unwrap_or("<bad utf-8>"));
+        self.ready_for_response = true;
+        Ok(data.len())
+    }
+
+    fn flush(&mut self) -> io::Result<()> {
+        debug!("Flush");
+        Ok(())
+    }
+}
+
+impl AsyncWrite for MockHttpStream {
+    fn shutdown(&mut self) -> futures::Poll<(), io::Error> {
+        debug!("Shutdown");
+        Ok(().into())
+    }
+}
+
+impl Write for MockPollStream {
+    fn write(&mut self, data: &[u8]) -> io::Result<usize> {
+        trace!("write");
+        let ret = self.stream.write(data);
+        self.set_readiness.set_readiness(Ready::readable()).unwrap();
+        ret
+    }
+
+    fn flush(&mut self) -> io::Result<()> {
+        self.stream.flush()
+    }
+}
+
+impl AsyncWrite for MockPollStream {
+    fn shutdown(&mut self) -> futures::Poll<(), io::Error> {
+        self.stream.shutdown()
+    }
+}
+
+impl tokio_service::Service for HostToReplyConnector {
+    type Request = hyper::Uri;
+    type Response = std::io::Cursor<Vec<u8>>;
+    type Error = std::io::Error;
+    type Future = Box<Future<Item=Self::Response, Error=Self::Error>>;
+
+    fn call(&self, _uri: Self::Request) -> Self::Future {
         unimplemented!();
     }
 
@@ -142,13 +284,13 @@ macro_rules! mock_connector_in_order (
             }
         }
 
-        impl hyper::client::Service for $name {
+        impl tokio_service::Service for $name {
             type Request = hyper::Uri;
-            type Response = tokio_core::net::TcpStream;
+            type Response = std::io::Cursor<Vec<u8>>;
             type Error = std::io::Error;
-            type Future = $crate::HttpConnecting;
+            type Future = Box<Future<Item=Self::Response, Error=Self::Error>>;
 
-            fn call(&self, uri: Self::Request) -> Self::Future {
+            fn call(&self, _uri: Self::Request) -> Self::Future {
                 unimplemented!();
             }
         }
@@ -172,30 +314,19 @@ impl Default for SequentialConnector {
     }
 }
 
-impl hyper::client::Service for SequentialConnector {
+impl tokio_service::Service for SequentialConnector {
     type Request = hyper::Uri;
-    type Response = tokio_core::net::TcpStream;
+    type Response = MockPollStream;
     type Error = std::io::Error;
-    type Future = HttpConnecting;
+    type Future = Box<Future<Item=Self::Response, Error=Self::Error>>;
 
     fn call(&self, uri: Self::Request) -> Self::Future {
-        unimplemented!();
+        debug!("SequentialConnector::call({:?})", uri);
+
+        assert!(self.content.len() != 0, "Not a single streamer return value specified");
+
+        let data = self.content[*self.current.lock().unwrap()].clone().into_bytes();
+        *self.current.lock().unwrap() += 1;
+        Box::new(futures::future::ok(MockPollStream::new(data)))
     }
-
-    // fn connect(&self, host: &str, port: u16, scheme: &str) -> ::hyper::Result<MockStream> {
-    //     use std::io::Cursor;
-    //     debug!("SequentialConnector::connect({:?}, {:?}, {:?})", host, port, scheme);
-
-    //     assert!(self.content.len() != 0, "Not a single streamer return value specified");
-
-    //     let r = Ok(MockStream {
-    //             write: vec![],
-    //             read: Cursor::new(self.content[*self.current.lock().unwrap()].clone().into_bytes())
-    //     });
-    //     *self.current.lock().unwrap() += 1;
-    //     r
-    // }
 }
-
-
-

@@ -48,26 +48,29 @@ fn result_to_bytes(res: hyper::Response) -> u8
 /// Just to test the result of `mock_connector!` - this test was copied from hyper.
 #[test]
 fn test_redirect_followall() {
-    let core = Core::new().unwrap();
+    let mut core = Core::new().unwrap();
     let client = hyper::client::Client::configure()
         .connector(MockRedirectPolicy::default())
         .build(&core.handle());
     //client.set_redirect_policy(hyper::client::RedirectPolicy::FollowAll);
 
-    let res = client.get("http://127.0.0.1".parse().unwrap()).wait().unwrap();
+    let req = client.get("http://127.0.0.1".parse().unwrap());
+    let res = core.run(req).unwrap();
     assert_eq!(res.headers().get(), Some(&hyper::header::Server::new("mock3".to_owned())));
 }
 
 #[test]
 fn test_sequential_mock() {
-    let core = Core::new().unwrap();
+    let mut core = Core::new().unwrap();
     let client = hyper::client::Client::configure()
         .connector(MockSequential::default())
         .build(&core.handle());
 
-    let res = client.get("http://127.0.0.1".parse().unwrap()).wait().unwrap();
+    let req = client.get("http://127.0.0.1".parse().unwrap());
+    let res = core.run(req).unwrap();
     assert_eq!(result_to_bytes(res), b'1');
 
-    let res = client.get("http://127.0.0.1".parse().unwrap()).wait().unwrap();
+    let req = client.get("http://127.0.0.1".parse().unwrap());
+    let res = core.run(req).unwrap();
     assert_eq!(result_to_bytes(res), b'2');
 }

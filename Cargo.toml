@@ -15,4 +15,12 @@ log = ">= 0.2"
 futures = "0.1.17"
 tokio-io = "0.1"
 tokio-core = "0.1.11"
+tokio-service = "0.1.0"
 bytes = "0.4.4"
+http = "0.1.5"
+tokio-mockstream = "1.1"
+tokio-reactor = "0.1.1"
+mio = "0.6"
+
+[dev-dependencies]
+env_logger = "0.5"

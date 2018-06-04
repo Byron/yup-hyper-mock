@@ -1,19 +1,18 @@
-// Mostly copied from https://github.com/hyperium/hyper/blob/master/src/mock.rs
+// Mostly copied from https://github.com/hyperium/hyper/blob/v0.11.27/src/mock.rs
 
-#[cfg(feature = "runtime")]
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::cmp;
 use std::io::{self, Read, Write};
-#[cfg(feature = "runtime")]
-use std::sync::{Arc, Mutex};
+use std::rc::Rc;
 
 use bytes::Buf;
 use futures::{Async, Poll};
 use futures::task::{self, Task};
 use tokio_io::{AsyncRead, AsyncWrite};
+use tokio_service::Service;
 
-#[cfg(feature = "runtime")]
-use ::client::connect::{Connect, Connected, Destination};
+use hyper::Uri;
 
 #[derive(Debug)]
 pub struct MockCursor {
@@ -117,16 +116,16 @@ impl<T> AsyncIo<T> {
         self.max_read_vecs = cnt;
     }
 
-    #[cfg(feature = "runtime")]
     pub fn park_tasks(&mut self, enabled: bool) {
         self.park_tasks = enabled;
     }
 
-    /*
+    #[cfg(feature = "tokio-proto")]
+    //TODO: fix proto::conn::tests to not use tokio-proto API,
+    //and then this cfg flag go away
     pub fn flushed(&self) -> bool {
         self.flushed
     }
-    */
 
     pub fn blocked(&self) -> bool {
         self.blocked
@@ -151,13 +150,13 @@ impl AsyncIo<MockCursor> {
         AsyncIo::new(MockCursor::wrap(buf.into()), bytes)
     }
 
-    /*
-    pub fn new_eof() -> AsyncIo<Buf> {
-        AsyncIo::new(Buf::wrap(Vec::new().into()), 1)
+    #[cfg(feature = "tokio-proto")]
+    //TODO: fix proto::conn::tests to not use tokio-proto API,
+    //and then this cfg flag go away
+    pub fn new_eof() -> AsyncIo<MockCursor> {
+        AsyncIo::new(MockCursor::wrap(Vec::new().into()), 1)
     }
-    */
 
-    #[cfg(feature = "runtime")]
     fn close(&mut self) {
         self.block_in(1);
         assert_eq!(self.inner.vec.len(), self.inner.pos);
@@ -289,69 +288,60 @@ impl ::std::ops::Deref for AsyncIo<MockCursor> {
     }
 }
 
-#[cfg(feature = "runtime")]
 pub struct Duplex {
-    inner: Arc<Mutex<DuplexInner>>,
+    inner: Rc<RefCell<DuplexInner>>,
 }
 
-#[cfg(feature = "runtime")]
 struct DuplexInner {
     handle_read_task: Option<Task>,
     read: AsyncIo<MockCursor>,
     write: AsyncIo<MockCursor>,
 }
 
-#[cfg(feature = "runtime")]
 impl Read for Duplex {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
-        self.inner.lock().unwrap().read.read(buf)
+        self.inner.borrow_mut().read.read(buf)
     }
 }
 
-#[cfg(feature = "runtime")]
 impl Write for Duplex {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        let mut inner = self.inner.lock().unwrap();
-        if let Some(task) = inner.handle_read_task.take() {
+        if let Some(task) = self.inner.borrow_mut().handle_read_task.take() {
             trace!("waking DuplexHandle read");
             task.notify();
         }
-        inner.write.write(buf)
+        self.inner.borrow_mut().write.write(buf)
     }
 
     fn flush(&mut self) -> io::Result<()> {
-        self.inner.lock().unwrap().write.flush()
+        self.inner.borrow_mut().write.flush()
     }
 }
 
-#[cfg(feature = "runtime")]
 impl AsyncRead for Duplex {
+
 }
 
-#[cfg(feature = "runtime")]
 impl AsyncWrite for Duplex {
     fn shutdown(&mut self) -> Poll<(), io::Error> {
         Ok(().into())
     }
 
     fn write_buf<B: Buf>(&mut self, buf: &mut B) -> Poll<usize, io::Error> {
-        let mut inner = self.inner.lock().unwrap();
-        if let Some(task) = inner.handle_read_task.take() {
+        if let Some(task) = self.inner.borrow_mut().handle_read_task.take() {
             task.notify();
         }
-        inner.write.write_buf(buf)
+        self.inner.borrow_mut().write.write_buf(buf)
     }
 }
 
-#[cfg(feature = "runtime")]
 pub struct DuplexHandle {
-    inner: Arc<Mutex<DuplexInner>>,
+    inner: Rc<RefCell<DuplexInner>>,
 }
 
-#[cfg(feature = "runtime")]
 impl DuplexHandle {
     pub fn read(&self, buf: &mut [u8]) -> Poll<usize, io::Error> {
-        let mut inner = self.inner.lock().unwrap();
+        let mut inner = self.inner.borrow_mut();
         assert!(buf.len() >= inner.write.inner.len());
         if inner.write.inner.is_empty() {
             trace!("DuplexHandle read parking");
@@ -363,7 +353,7 @@ impl DuplexHandle {
     }
 
     pub fn write(&self, bytes: &[u8]) -> Poll<usize, io::Error> {
-        let mut inner = self.inner.lock().unwrap();
+        let mut inner = self.inner.borrow_mut();
         assert!(inner.read.inner.vec.is_empty());
         assert_eq!(inner.read.inner.pos, 0);
         inner
@@ -376,26 +366,23 @@ impl DuplexHandle {
     }
 }
 
-#[cfg(feature = "runtime")]
 impl Drop for DuplexHandle {
     fn drop(&mut self) {
         trace!("mock duplex handle drop");
-        let mut inner = self.inner.lock().unwrap();
+        let mut inner = self.inner.borrow_mut();
         inner.read.close();
         inner.write.close();
     }
 }
 
-#[cfg(feature = "runtime")]
 pub struct MockConnector {
-    mocks: Mutex<HashMap<String, Vec<Duplex>>>,
+    mocks: RefCell<HashMap<String, Vec<Duplex>>>,
 }
 
-#[cfg(feature = "runtime")]
 impl MockConnector {
     pub fn new() -> MockConnector {
         MockConnector {
-            mocks: Mutex::new(HashMap::new()),
+            mocks: RefCell::new(HashMap::new()),
         }
     }
 
@@ -410,7 +397,7 @@ impl MockConnector {
         inner.read.park_tasks(true);
         inner.write.park_tasks(true);
 
-        let inner = Arc::new(Mutex::new(inner));
+        let inner = Rc::new(RefCell::new(inner));
 
         let duplex = Duplex {
             inner: inner.clone(),
@@ -419,7 +406,7 @@ impl MockConnector {
             inner: inner,
         };
 
-        self.mocks.lock().unwrap().entry(key)
+        self.mocks.borrow_mut().entry(key)
             .or_insert(Vec::new())
             .push(duplex);
 
@@ -427,24 +414,19 @@ impl MockConnector {
     }
 }
 
-#[cfg(feature = "runtime")]
-impl Connect for MockConnector {
-    type Transport = Duplex;
+impl Service for MockConnector {
+    type Request = Uri;
+    type Response = Duplex;
     type Error = io::Error;
-    type Future = ::futures::future::FutureResult<(Self::Transport, Connected), Self::Error>;
+    type Future = ::futures::future::FutureResult<Self::Response, Self::Error>;
 
-    fn connect(&self, dst: Destination) -> Self::Future {
+    fn call(&self, uri: Uri) -> Self::Future {
         use futures::future;
-        trace!("mock connect: {:?}", dst);
-        let key = format!("{}://{}{}", dst.scheme(), dst.host(), if let Some(port) = dst.port() {
-            format!(":{}", port)
-        } else {
-            "".to_owned()
-        });
-        let mut mocks = self.mocks.lock().unwrap();
-        let mocks = mocks.get_mut(&key)
-            .expect(&format!("unknown mocks uri: {}", key));
-        assert!(!mocks.is_empty(), "no additional mocks for {}", key);
-        future::ok((mocks.remove(0), Connected::new()))
+        trace!("mock connect: {:?}", uri.as_ref());
+        let mut mocks = self.mocks.borrow_mut();
+        let mocks = mocks.get_mut(uri.as_ref())
+            .expect(&format!("unknown mocks uri: {:?}", uri.as_ref()));
+        assert!(!mocks.is_empty(), "no additional mocks for {:?}", uri.as_ref());
+        future::ok(mocks.remove(0))
     }
 }
