@@ -31,28 +31,19 @@ extern crate hyper;
 extern crate futures;
 extern crate tokio_io;
 extern crate tokio_core;
-extern crate tokio_service;
 extern crate tokio_reactor;
 extern crate mio;
 
 #[macro_use]
 extern crate log;
 
-use std::io::{self, Read, Write};
 use std::sync::Mutex;
 use std::collections::HashMap;
 use futures::Future;
-use tokio_io::{AsyncRead, AsyncWrite};
-use futures::task;
-use tokio_reactor::PollEvented;
-use mio::event::Evented;
-use mio::PollOpt;
-use mio::Poll;
-use mio::Ready;
-use mio::Token;
-use mio::SetReadiness;
-use mio::Registration;
 use hyper::client::connect;
+
+mod streams;
+pub use streams::MockPollStream;
 
 /// This macro maps host URLs to a respective reply, which is given in plain-text.
 /// It ignores everything that is written to it.
@@ -89,133 +80,13 @@ macro_rules! mock_connector (
     )
 );
 
-/// A `NetworkConnector` which provides a single reply stream per host.
+/// A `Connect` which provides a single reply stream per host.
 ///
 /// The mapping is done from full host url (e.g. `http://host.name.com`) to the 
 /// singular reply the host is supposed to make.
 #[derive(Default, Clone)]
 pub struct HostToReplyConnector {
     pub m: HashMap<String, String>
-}
-
-pub struct MockHttpStream {
-    data: Vec<u8>,
-    pos: usize,
-    ready_for_response: bool,
-    task: Option<task::Task>,
-    registration: Registration,
-}
-
-pub struct MockPollStream {
-    stream: PollEvented<MockHttpStream>,
-    set_readiness: SetReadiness
-}
-
-impl MockPollStream {
-    pub fn new(data: Vec<u8>) -> MockPollStream {
-        let (registration, set_readiness) = Registration::new2();
-        let m = MockHttpStream {
-            data: data,
-            pos: 0,
-            ready_for_response: false,
-            task: None,
-            registration: registration
-        };
-        set_readiness.set_readiness(Ready::writable()).unwrap();
-        MockPollStream {
-            stream: PollEvented::new(m),
-            set_readiness: set_readiness
-        }
-    }
-}
-
-impl Evented for MockHttpStream {
-    fn register(&self, poll: &Poll, token: Token, interest: Ready, opts: PollOpt)
-        -> io::Result<()>
-    {
-        trace!("Token: {:?}", token);
-        Ok(self.registration.register(poll, token, interest, opts)?)
-    }
-
-    fn reregister(&self, poll: &Poll, token: Token, interest: Ready, opts: PollOpt)
-        -> io::Result<()>
-    {
-        Ok(self.registration.reregister(poll, token, interest, opts)?)
-    }
-
-    fn deregister(&self, _poll: &Poll) -> io::Result<()> {
-        Ok(())
-    }
-}
-
-impl Read for MockHttpStream {
-    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
-        if !self.ready_for_response {
-            debug!("Not ready for read yet");
-            self.task = Some(task::current());
-            return Err(io::ErrorKind::WouldBlock.into());
-        }
-        trace!("Buffer size: {}, Data size: {}, Pos: {}", buf.len(), self.data.len(), self.pos);
-        let n = if buf.len() < (self.data.len()-self.pos) { buf.len() } else { self.data.len()-self.pos };
-        if n > 0 {
-            for i in 0..n {
-                buf[i] = self.data[self.pos];
-                self.pos+=1;
-            }
-        }
-        trace!("Read {} bytes: '{}'", n, std::str::from_utf8(&buf[..n]).unwrap_or("<bad utf-8>"));
-        self.task = Some(task::current());
-        Ok(n)
-    }
-}
-
-impl AsyncRead for MockHttpStream {}
-
-impl Read for MockPollStream {
-    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
-        self.stream.read(buf)
-    }
-}
-
-impl AsyncRead for MockPollStream {}
-
-impl Write for MockHttpStream {
-    fn write(&mut self, data: &[u8]) -> io::Result<usize> {
-        debug!("Request data: {}", std::str::from_utf8(data).unwrap_or("<bad utf-8>"));
-        self.ready_for_response = true;
-        Ok(data.len())
-    }
-
-    fn flush(&mut self) -> io::Result<()> {
-        debug!("Flush");
-        Ok(())
-    }
-}
-
-impl AsyncWrite for MockHttpStream {
-    fn shutdown(&mut self) -> futures::Poll<(), io::Error> {
-        debug!("Shutdown");
-        Ok(().into())
-    }
-}
-
-impl Write for MockPollStream {
-    fn write(&mut self, data: &[u8]) -> io::Result<usize> {
-        trace!("write");
-        let ret = self.stream.write(data);
-        self.set_readiness.set_readiness(Ready::readable()).unwrap();
-        ret
-    }
-
-    fn flush(&mut self) -> io::Result<()> {
-        self.stream.flush()
-    }
-}
-
-impl AsyncWrite for MockPollStream {
-    fn shutdown(&mut self) -> futures::Poll<(), io::Error> {
-        self.stream.shutdown()
-    }
 }
 
 impl connect::Connect for HostToReplyConnector {
