@@ -1,6 +1,3 @@
-// FIXME
-#![allow(dead_code, unused_imports, unreachable_code, unused_variables)]
-
 //! Contains various utility types and macros useful for testing hyper clients. 
 //! 
 //! # Macros
@@ -31,29 +28,20 @@
 
 
 extern crate hyper;
-#[macro_use]
 extern crate futures;
 extern crate tokio_io;
-#[macro_use]
 extern crate tokio_core;
 extern crate tokio_service;
-extern crate bytes;
-extern crate tokio_mockstream;
 extern crate tokio_reactor;
 extern crate mio;
 
 #[macro_use]
 extern crate log;
 
-//use std::fmt;
-//use std::net::SocketAddr;
-use std::io::{self, Read, Write, Cursor};
+use std::io::{self, Read, Write};
 use std::sync::Mutex;
 use std::collections::HashMap;
-//use std::time::Duration;
 use futures::Future;
-use futures::future::poll_fn;
-use futures::Async;
 use tokio_io::{AsyncRead, AsyncWrite};
 use futures::task;
 use tokio_reactor::PollEvented;
@@ -64,16 +52,10 @@ use mio::Ready;
 use mio::Token;
 use mio::SetReadiness;
 use mio::Registration;
-use std::thread;
-
-// mod hyper_mocks;
-// pub type AsyncMockCursor = hyper_mocks::AsyncIo<hyper_mocks::MockCursor>;
-// pub use hyper_mocks::{Duplex, MockConnector};
-use tokio_mockstream::MockStream;
+use hyper::client::connect;
 
 /// This macro maps host URLs to a respective reply, which is given in plain-text.
-/// It ignores, but stores, everything that is written to it. However, the stored
-/// values are not accessible just yet.
+/// It ignores everything that is written to it.
 #[macro_export]
 macro_rules! mock_connector (
     ($name:ident {
@@ -90,14 +72,18 @@ macro_rules! mock_connector (
             }
         }
 
-        impl tokio_service::Service for $name {
-            type Request = hyper::Uri;
-            type Response = tokio_core::net::TcpStream;
+        impl hyper::client::connect::Connect for $name {
+            type Transport = $crate::MockPollStream;
             type Error = std::io::Error;
-            type Future = Box<Future<Item=Self::Response, Error=Self::Error>>;
+            type Future = Box<Future<Item=(Self::Transport, hyper::client::connect::Connected), Error=Self::Error> + Send>;
 
-            fn call(&self, _uri: Self::Request) -> Self::Future {
-                unimplemented!();
+            fn connect(&self, dst: hyper::client::connect::Destination) -> Self::Future {
+                let key = format!("{}://{}", dst.scheme(), dst.host());
+                // ignore port for now
+                match self.0.m.get(&key) {
+                    Some(res) => Box::new(futures::future::ok(($crate::MockPollStream::new(res.clone().into_bytes()), hyper::client::connect::Connected::new()))),
+                    None => panic!("mock_connector doesn't know url {}", key)
+                }
             }
         }
     )
@@ -107,7 +93,7 @@ macro_rules! mock_connector (
 ///
 /// The mapping is done from full host url (e.g. `http://host.name.com`) to the 
 /// singular reply the host is supposed to make.
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct HostToReplyConnector {
     pub m: HashMap<String, String>
 }
@@ -126,7 +112,7 @@ pub struct MockPollStream {
 }
 
 impl MockPollStream {
-    fn new(data: Vec<u8>) -> MockPollStream {
+    pub fn new(data: Vec<u8>) -> MockPollStream {
         let (registration, set_readiness) = Registration::new2();
         let m = MockHttpStream {
             data: data,
@@ -157,8 +143,7 @@ impl Evented for MockHttpStream {
         Ok(self.registration.reregister(poll, token, interest, opts)?)
     }
 
-    fn deregister(&self, poll: &Poll) -> io::Result<()> {
-        self.registration.deregister(poll)?;
+    fn deregister(&self, _poll: &Poll) -> io::Result<()> {
         Ok(())
     }
 }
@@ -188,17 +173,7 @@ impl AsyncRead for MockHttpStream {}
 
 impl Read for MockPollStream {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
-        let ret = self.stream.read(buf);
-        if let Ok(ref val) = ret {
-            //self.set_readiness.set_readiness(Ready::empty())?;
-            //let sr = self.set_readiness.clone();
-            thread::spawn(move || {
-                thread::sleep_ms(1000);
-                trace!("Mark as ready");
-                //sr.set_readiness(Ready::readable()).unwrap();
-            });
-        }
-        ret
+        self.stream.read(buf)
     }
 }
 
@@ -243,28 +218,21 @@ impl AsyncWrite for MockPollStream {
     }
 }
 
-impl tokio_service::Service for HostToReplyConnector {
-    type Request = hyper::Uri;
-    type Response = std::io::Cursor<Vec<u8>>;
+impl connect::Connect for HostToReplyConnector {
+    type Transport = MockPollStream;
     type Error = std::io::Error;
-    type Future = Box<Future<Item=Self::Response, Error=Self::Error>>;
+    type Future = Box<Future<Item=(Self::Transport, connect::Connected), Error=Self::Error> + Send>;
 
-    fn call(&self, _uri: Self::Request) -> Self::Future {
-        unimplemented!();
+    fn connect(&self, dst: connect::Destination) -> Self::Future {
+        debug!("HostToReplyConnector::connect({:?})", dst);
+        
+        let key = format!("{}://{}", dst.scheme(), dst.host());
+        // ignore port for now
+        match self.m.get(&key) {
+            Some(res) => Box::new(futures::future::ok((MockPollStream::new(res.clone().into_bytes()), connect::Connected::new()))),
+            None => panic!("HostToReplyConnector doesn't know url {}", key)
+        }
     }
-
-    // fn connect(&self, host: &str, port: u16, scheme: &str) -> ::hyper::Result<MockStream> {
-    //     debug!("HostToReplyConnector::connect({:?}, {:?}, {:?})", host, port, scheme);
-    //     let key = format!("{}://{}", scheme, host);
-    //     // ignore port for now
-    //     match self.m.get(&key) {
-    //         Some(res) => Ok(MockStream {
-    //             write: vec![],
-    //             read: Cursor::new(res.clone().into_bytes()),
-    //         }),
-    //         None => panic!("HostToReplyConnector doesn't know url {}", key)
-    //     }
-    // }
 }
 
 /// This macro yields all given server replies in the order they are given.
@@ -284,14 +252,17 @@ macro_rules! mock_connector_in_order (
             }
         }
 
-        impl tokio_service::Service for $name {
-            type Request = hyper::Uri;
-            type Response = std::io::Cursor<Vec<u8>>;
+        impl hyper::client::connect::Connect for $name {
+            type Transport = $crate::MockPollStream;
             type Error = std::io::Error;
-            type Future = Box<Future<Item=Self::Response, Error=Self::Error>>;
+            type Future = Box<Future<Item=(Self::Transport, hyper::client::connect::Connected), Error=Self::Error> + Send>;
 
-            fn call(&self, _uri: Self::Request) -> Self::Future {
-                unimplemented!();
+            fn connect(&self, _dst: hyper::client::connect::Destination) -> Self::Future {
+                assert!(self.0.content.len() != 0, "Not a single streamer return value specified");
+
+                let data = self.0.content[*self.0.current.lock().unwrap()].clone().into_bytes();
+                *self.0.current.lock().unwrap() += 1;
+                Box::new(futures::future::ok(($crate::MockPollStream::new(data), hyper::client::connect::Connected::new())))
             }
         }
     )
@@ -302,7 +273,7 @@ macro_rules! mock_connector_in_order (
 /// to determine the data it should be initialized with
 pub struct SequentialConnector {
     pub content: Vec<String>,
-    current: Mutex<usize>,
+    pub current: Mutex<usize>,
 }
 
 impl Default for SequentialConnector {
@@ -314,19 +285,18 @@ impl Default for SequentialConnector {
     }
 }
 
-impl tokio_service::Service for SequentialConnector {
-    type Request = hyper::Uri;
-    type Response = MockPollStream;
+impl connect::Connect for SequentialConnector {
+    type Transport = MockPollStream;
     type Error = std::io::Error;
-    type Future = Box<Future<Item=Self::Response, Error=Self::Error>>;
+    type Future = Box<Future<Item=(Self::Transport, connect::Connected), Error=Self::Error> + Send>;
 
-    fn call(&self, uri: Self::Request) -> Self::Future {
-        debug!("SequentialConnector::call({:?})", uri);
+    fn connect(&self, dst: connect::Destination) -> Self::Future {
+        debug!("SequentialConnector::connect({:?})", dst);
 
         assert!(self.content.len() != 0, "Not a single streamer return value specified");
 
         let data = self.content[*self.current.lock().unwrap()].clone().into_bytes();
         *self.current.lock().unwrap() += 1;
-        Box::new(futures::future::ok(MockPollStream::new(data)))
+        Box::new(futures::future::ok((MockPollStream::new(data), connect::Connected::new())))
     }
 }

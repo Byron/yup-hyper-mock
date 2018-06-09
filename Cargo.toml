@@ -10,15 +10,12 @@ documentation = "http://byron.github.io/yup-hyper-mock"
 license = "MIT"
 
 [dependencies]
-hyper = "0.11"
+hyper = "0.12"
 log = ">= 0.2"
-futures = "0.1.17"
+futures = "0.1"
 tokio-io = "0.1"
 tokio-core = "0.1.11"
 tokio-service = "0.1.0"
-bytes = "0.4.4"
-http = "0.1.5"
-tokio-mockstream = "1.1"
 tokio-reactor = "0.1.1"
 mio = "0.6"
 
