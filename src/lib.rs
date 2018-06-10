@@ -28,196 +28,25 @@
 
 
 extern crate hyper;
+extern crate futures;
+extern crate tokio_io;
+extern crate tokio_core;
+extern crate tokio_reactor;
+extern crate mio;
 
 #[macro_use]
 extern crate log;
 
-use std::fmt;
-use std::net::SocketAddr;
-use std::io::{self, Read, Write, Cursor};
 use std::sync::Mutex;
 use std::collections::HashMap;
-use std::time::Duration;
+use futures::Future;
+use hyper::client::connect;
 
-use hyper::net::{NetworkStream, NetworkConnector};
-
-/// A `NetworkStream` compatible stream that writes into memory, and reads from memory.
-pub struct MockStream {
-    pub read: Cursor<Vec<u8>>,
-    pub write: Vec<u8>,
-}
-
-/// A `NetworkStream` compatible stream which contains another `NetworkStream`, 
-/// whose traffic will be written to another stream.
-/// Currently that stream will always be standard error.
-pub struct TeeStream<T> {
-    pub read_write: T,
-    pub copy_to: io::Stderr,
-}
-
-impl<T> Clone for TeeStream<T>
-    where T: Clone {
-    fn clone(&self) -> TeeStream<T> {
-        TeeStream {
-            read_write: self.read_write.clone(),
-            copy_to: io::stderr(),
-        }
-    }
-}
-
-impl<T> Read for TeeStream<T>
-    where T: Read {
-    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
-        let res = self.read_write.read(buf);
-        match res {
-            Ok(s) => {
-                self.copy_to.write(&buf[..s]).ok();
-            }
-            _ => {}
-        };
-        res
-    }
-}
-
-impl<T> Write for TeeStream<T>
-    where T: Write {
-    fn write(&mut self, msg: &[u8]) -> io::Result<usize> {
-        self.copy_to.write(msg).ok();
-        self.read_write.write(msg)
-    }
-    fn flush(&mut self) -> io::Result<()> {
-        self.copy_to.flush().ok();
-        self.read_write.flush()
-    }
-}
-
-impl<T> NetworkStream for TeeStream<T>
-    where T: NetworkStream + Send + Clone {
-    fn peer_addr(&mut self) -> io::Result<SocketAddr> {
-        self.read_write.peer_addr()
-    }
-
-    fn set_read_timeout(&self, _: Option<Duration>) -> io::Result<()> {
-        Ok(())
-    }
-
-    fn set_write_timeout(&self, _: Option<Duration>) -> io::Result<()> {
-        Ok(())
-    }
-}
-impl Clone for MockStream {
-    fn clone(&self) -> MockStream {
-        MockStream {
-            read: Cursor::new(self.read.get_ref().clone()),
-            write: self.write.clone()
-        }
-    }
-}
-
-impl fmt::Debug for MockStream {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "MockStream {{ read: {:?}, write: {:?} }}", self.read.get_ref(), self.write)
-    }
-}
-
-impl PartialEq for MockStream {
-    fn eq(&self, other: &MockStream) -> bool {
-        self.read.get_ref() == other.read.get_ref() && self.write == other.write
-    }
-}
-
-impl MockStream {
-    pub fn new() -> MockStream {
-        MockStream {
-            read: Cursor::new(vec![]),
-            write: vec![],
-        }
-    }
-
-    pub fn with_input(input: &[u8]) -> MockStream {
-        MockStream {
-            read: Cursor::new(input.to_vec()),
-            write: vec![]
-        }
-    }
-}
-
-impl Read for MockStream {
-    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
-        self.read.read(buf)
-    }
-}
-
-impl Write for MockStream {
-    fn write(&mut self, msg: &[u8]) -> io::Result<usize> {
-        Write::write(&mut self.write, msg)
-    }
-
-    fn flush(&mut self) -> io::Result<()> {
-        Ok(())
-    }
-}
-
-impl NetworkStream for MockStream {
-    fn peer_addr(&mut self) -> io::Result<SocketAddr> {
-        Ok("127.0.0.1:1337".parse().unwrap())
-    }
-
-    fn set_read_timeout(&self, _: Option<Duration>) -> io::Result<()> {
-        Ok(())
-    }
-
-    fn set_write_timeout(&self, _: Option<Duration>) -> io::Result<()> {
-        Ok(())
-    }
-}
-
-/// A `NetworkConnector` which creates `MockStream` instances exclusively.
-/// It may be useful to intercept writes.
-pub struct MockConnector;
-
-impl NetworkConnector for MockConnector {
-    type Stream = MockStream;
-
-    fn connect(&self, _host: &str, _port: u16, _scheme: &str) -> hyper::Result<MockStream> {
-        Ok(MockStream::new())
-    }
-}
-
-/// A `NetworkConnector` embedding another `NetworkConnector` instance, 
-/// and sets it up to write all reads and writes to standard error as well.
-///
-/// > **NOTE** It was originally intended to allow arbitrary streams to copy data to,
-/// > but I couldn't get passt the compiler with that as normal streams, like files,
-/// > are not normally clonable. Maybe an Arc+Mutex would have helped ... .
-pub struct TeeConnector<C>
-    where C: NetworkConnector {
-    pub connector: C,
-}
-
-impl<C, S> NetworkConnector for TeeConnector<C> 
-    where C: NetworkConnector<Stream=S>,
-          S: NetworkStream + Send + Clone {
-    type Stream = TeeStream<<C as NetworkConnector>::Stream>;
-
-    fn connect(&self, _host: &str, _port: u16, _scheme: &str)
-        -> hyper::Result<TeeStream<<C as NetworkConnector>::Stream>> {
-        match self.connector.connect(_host, _port, _scheme) {
-            Ok(s) => {
-                Ok(TeeStream {
-                        read_write: s,
-                        copy_to: io::stderr(),
-                    }
-                )
-            },
-            Err(err) => Err(err),
-        }
-    }
-}
+mod streams;
+pub use streams::MockPollStream;
 
 /// This macro maps host URLs to a respective reply, which is given in plain-text.
-/// It ignores, but stores, everything that is written to it. However, the stored
-/// values are not accessible just yet.
+/// It ignores everything that is written to it.
 #[macro_export]
 macro_rules! mock_connector (
     ($name:ident {
@@ -234,37 +63,44 @@ macro_rules! mock_connector (
             }
         }
 
-        impl hyper::net::NetworkConnector for $name {
-            type Stream = $crate::MockStream;
+        impl hyper::client::connect::Connect for $name {
+            type Transport = $crate::MockPollStream;
+            type Error = std::io::Error;
+            type Future = Box<Future<Item=(Self::Transport, hyper::client::connect::Connected), Error=Self::Error> + Send>;
 
-            fn connect(&self, host: &str, port: u16, scheme: &str) -> ::hyper::Result<$crate::MockStream> {
-                self.0.connect(host, port, scheme)
+            fn connect(&self, dst: hyper::client::connect::Destination) -> Self::Future {
+                let key = format!("{}://{}", dst.scheme(), dst.host());
+                // ignore port for now
+                match self.0.m.get(&key) {
+                    Some(res) => Box::new(futures::future::ok(($crate::MockPollStream::new(res.clone().into_bytes()), hyper::client::connect::Connected::new()))),
+                    None => panic!("mock_connector doesn't know url {}", key)
+                }
             }
         }
     )
 );
 
-/// A `NetworkConnector` which provides a single reply stream per host.
+/// A `Connect` which provides a single reply stream per host.
 ///
 /// The mapping is done from full host url (e.g. `http://host.name.com`) to the 
 /// singular reply the host is supposed to make.
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct HostToReplyConnector {
     pub m: HashMap<String, String>
 }
 
-impl hyper::net::NetworkConnector for HostToReplyConnector {
-    type Stream = MockStream;
+impl connect::Connect for HostToReplyConnector {
+    type Transport = MockPollStream;
+    type Error = std::io::Error;
+    type Future = Box<Future<Item=(Self::Transport, connect::Connected), Error=Self::Error> + Send>;
 
-    fn connect(&self, host: &str, port: u16, scheme: &str) -> ::hyper::Result<MockStream> {
-        debug!("HostToReplyConnector::connect({:?}, {:?}, {:?})", host, port, scheme);
-        let key = format!("{}://{}", scheme, host);
+    fn connect(&self, dst: connect::Destination) -> Self::Future {
+        debug!("HostToReplyConnector::connect({:?})", dst);
+        
+        let key = format!("{}://{}", dst.scheme(), dst.host());
         // ignore port for now
         match self.m.get(&key) {
-            Some(res) => Ok(MockStream {
-                write: vec![],
-                read: Cursor::new(res.clone().into_bytes()),
-            }),
+            Some(res) => Box::new(futures::future::ok((MockPollStream::new(res.clone().into_bytes()), connect::Connected::new()))),
             None => panic!("HostToReplyConnector doesn't know url {}", key)
         }
     }
@@ -287,10 +123,17 @@ macro_rules! mock_connector_in_order (
             }
         }
 
-        impl hyper::net::NetworkConnector for $name {
-            type Stream = $crate::MockStream;
-            fn connect(&self, host: &str, port: u16, scheme: &str) -> ::hyper::Result<$crate::MockStream> {
-                self.0.connect(host, port, scheme)
+        impl hyper::client::connect::Connect for $name {
+            type Transport = $crate::MockPollStream;
+            type Error = std::io::Error;
+            type Future = Box<Future<Item=(Self::Transport, hyper::client::connect::Connected), Error=Self::Error> + Send>;
+
+            fn connect(&self, _dst: hyper::client::connect::Destination) -> Self::Future {
+                assert!(self.0.content.len() != 0, "Not a single streamer return value specified");
+
+                let data = self.0.content[*self.0.current.lock().unwrap()].clone().into_bytes();
+                *self.0.current.lock().unwrap() += 1;
+                Box::new(futures::future::ok(($crate::MockPollStream::new(data), hyper::client::connect::Connected::new())))
             }
         }
     )
@@ -301,7 +144,7 @@ macro_rules! mock_connector_in_order (
 /// to determine the data it should be initialized with
 pub struct SequentialConnector {
     pub content: Vec<String>,
-    current: Mutex<usize>,
+    pub current: Mutex<usize>,
 }
 
 impl Default for SequentialConnector {
@@ -313,23 +156,18 @@ impl Default for SequentialConnector {
     }
 }
 
-impl hyper::net::NetworkConnector for SequentialConnector {
-    type Stream = MockStream;
+impl connect::Connect for SequentialConnector {
+    type Transport = MockPollStream;
+    type Error = std::io::Error;
+    type Future = Box<Future<Item=(Self::Transport, connect::Connected), Error=Self::Error> + Send>;
 
-    fn connect(&self, host: &str, port: u16, scheme: &str) -> ::hyper::Result<MockStream> {
-        use std::io::Cursor;
-        debug!("SequentialConnector::connect({:?}, {:?}, {:?})", host, port, scheme);
+    fn connect(&self, dst: connect::Destination) -> Self::Future {
+        debug!("SequentialConnector::connect({:?})", dst);
 
         assert!(self.content.len() != 0, "Not a single streamer return value specified");
 
-        let r = Ok(MockStream {
-                write: vec![],
-                read: Cursor::new(self.content[*self.current.lock().unwrap()].clone().into_bytes())
-        });
+        let data = self.content[*self.current.lock().unwrap()].clone().into_bytes();
         *self.current.lock().unwrap() += 1;
-        r
+        Box::new(futures::future::ok((MockPollStream::new(data), connect::Connected::new())))
     }
 }
-
-
-
