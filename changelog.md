@@ -1,3 +1,9 @@
+<a name="v3.12.0"></a>
+## v3.12.0 (2018-06-10)
+
+Upgrade to hyper v0.12 - this might break dependencies, thus the major version jump.
+The minor version now tracks the hyper version - it's a feature :D.
+
 <a name="v2.0.0"></a>
 ## v2.0.0 (2017-01-31)
 
