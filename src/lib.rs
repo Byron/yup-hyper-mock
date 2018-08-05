@@ -1,7 +1,7 @@
-//! Contains various utility types and macros useful for testing hyper clients. 
-//! 
+//! Contains various utility types and macros useful for testing hyper clients.
+//!
 //! # Macros
-//! The `mock_connector!` and `mock_connector_in_order!` macros can be used to 
+//! The `mock_connector!` and `mock_connector_in_order!` macros can be used to
 //! feed a client with preset data. That way you can control exactly what it will
 //! see, confining the test-case to its own sandbox that way.
 //!
@@ -10,7 +10,7 @@
 //! integration test goes into its own binary.
 //!
 //! # Usage
-//! 
+//!
 //! Set it up for use in tests in `Cargo.toml`
 //!
 //! ```toml
@@ -18,9 +18,9 @@
 //! yup-hyper-mock = "*"
 //! log = "*"  # log macros are used within yup-hyper-mock
 //! ```
-//! 
+//!
 //! Link it into your `src/(lib.rs|main.rs)`
-//! 
+//!
 //! ```Rust
 //! #[cfg(test)] #[macro_use]
 //! extern crate "yup-hyper-mock" as hyper_mock
@@ -53,6 +53,7 @@ macro_rules! mock_connector (
         $($url:expr => $res:expr)*
     }) => (
 
+        #[derive(Clone)]
         pub struct $name($crate::HostToReplyConnector);
 
         impl Default for $name {
@@ -82,7 +83,7 @@ macro_rules! mock_connector (
 
 /// A `Connect` which provides a single reply stream per host.
 ///
-/// The mapping is done from full host url (e.g. `http://host.name.com`) to the 
+/// The mapping is done from full host url (e.g. `http://host.name.com`) to the
 /// singular reply the host is supposed to make.
 #[derive(Default, Clone)]
 pub struct HostToReplyConnector {
@@ -96,7 +97,7 @@ impl connect::Connect for HostToReplyConnector {
 
     fn connect(&self, dst: connect::Destination) -> Self::Future {
         debug!("HostToReplyConnector::connect({:?})", dst);
-        
+
         let key = format!("{}://{}", dst.scheme(), dst.host());
         // ignore port for now
         match self.m.get(&key) {
