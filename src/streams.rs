@@ -107,8 +107,19 @@ impl AsyncWrite for MockHttpStream {
 impl Write for MockPollStream {
     fn write(&mut self, data: &[u8]) -> io::Result<usize> {
         let ret = self.stream.write(data);
-        self.set_readiness.set_readiness(Ready::readable()).unwrap();
-        ret
+        match ret {
+            Ok(r) => {
+                self.set_readiness.set_readiness(Ready::readable()).unwrap();
+                Ok(r)
+            }
+
+            Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
+                self.stream.clear_write_ready()?;
+                Err(io::Error::from(io::ErrorKind::WouldBlock))
+            }
+
+            Err(e) => Err(e),
+        }
     }
 
     fn flush(&mut self) -> io::Result<()> {
