@@ -8,6 +8,7 @@ description = "A utility library for testing clients using hyper"
 repository = "https://github.com/Byron/yup-hyper-mock"
 documentation = "http://byron.github.io/yup-hyper-mock"
 license = "MIT"
+edition = "2015"
 
 [dependencies]
 hyper = "0.12"
