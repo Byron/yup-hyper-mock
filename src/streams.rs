@@ -1,8 +1,9 @@
-use futures;
 use std::str;
 use std::io::{self, Read, Write};
-use tokio_io::{AsyncRead, AsyncWrite};
+
+use futures;
 use futures::task;
+use tokio_io::{AsyncRead, AsyncWrite};
 use tokio_reactor::PollEvented;
 use mio::{event::Evented, PollOpt, Poll, Ready, Token, SetReadiness, Registration};
 

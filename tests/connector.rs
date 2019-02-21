@@ -1,8 +1,8 @@
 //! Test usage of connectors which work entirely without macros
-extern crate hyper;
-extern crate yup_hyper_mock;
-extern crate tokio_core;
-extern crate env_logger;
+
+
+
+use env_logger;
 
 use tokio_core::reactor::Core;
 use hyper::{Body, client::Client, header, rt::Future, rt::Stream, Response};
