@@ -43,7 +43,7 @@ use futures::Future;
 use hyper::client::connect;
 
 mod streams;
-pub use streams::MockPollStream;
+pub use crate::streams::MockPollStream;
 
 /// This macro maps host URLs to a respective reply, which is given in plain-text.
 /// It ignores everything that is written to it.
