@@ -26,19 +26,13 @@
 //! extern crate "yup-hyper-mock" as hyper_mock
 //! ```
 
-
-extern crate hyper;
-extern crate futures;
-extern crate tokio_io;
-extern crate tokio_core;
-extern crate tokio_reactor;
-extern crate mio;
-
 #[macro_use]
 extern crate log;
 
 use std::sync::Mutex;
 use std::collections::HashMap;
+
+use futures;
 use futures::Future;
 use hyper::client::connect;
 
@@ -93,7 +87,7 @@ pub struct HostToReplyConnector {
 impl connect::Connect for HostToReplyConnector {
     type Transport = MockPollStream;
     type Error = std::io::Error;
-    type Future = Box<Future<Item=(Self::Transport, connect::Connected), Error=Self::Error> + Send>;
+    type Future = Box<dyn Future<Item=(Self::Transport, connect::Connected), Error=Self::Error> + Send>;
 
     fn connect(&self, dst: connect::Destination) -> Self::Future {
         debug!("HostToReplyConnector::connect({:?})", dst);
@@ -160,7 +154,7 @@ impl Default for SequentialConnector {
 impl connect::Connect for SequentialConnector {
     type Transport = MockPollStream;
     type Error = std::io::Error;
-    type Future = Box<Future<Item=(Self::Transport, connect::Connected), Error=Self::Error> + Send>;
+    type Future = Box<dyn Future<Item=(Self::Transport, connect::Connected), Error=Self::Error> + Send>;
 
     fn connect(&self, dst: connect::Destination) -> Self::Future {
         debug!("SequentialConnector::connect({:?})", dst);

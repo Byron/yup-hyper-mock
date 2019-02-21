@@ -1,10 +1,10 @@
-extern crate hyper;
+use hyper;
 #[macro_use]
 extern crate yup_hyper_mock;
 //#[macro_use]
-extern crate log;
-extern crate futures;
-extern crate tokio_core;
+
+use futures;
+
 
 use futures::future::Future;
 use futures::Stream;
