@@ -29,12 +29,15 @@
 #[macro_use]
 extern crate log;
 
-use std::sync::Mutex;
 use std::collections::HashMap;
+use std::pin::Pin;
+use std::sync::Arc;
+use std::task::{Context, Poll};
 
 use futures;
 use futures::Future;
-use hyper::client::connect;
+use futures::lock::Mutex;
+use hyper::{service::Service, Uri};
 
 mod streams;
 pub use crate::streams::MockPollStream;
@@ -46,30 +49,28 @@ macro_rules! mock_connector (
     ($name:ident {
         $($url:expr => $res:expr)*
     }) => (
-
         #[derive(Clone)]
         pub struct $name($crate::HostToReplyConnector);
 
         impl Default for $name {
-            fn default() -> $name {
-                let mut c = $name(Default::default());
+            fn default() -> Self {
+                let mut c = Self(Default::default());
                 $(c.0.m.insert($url.to_string(), $res.to_string());)*
                 c
             }
         }
 
-        impl hyper::client::connect::Connect for $name {
-            type Transport = $crate::MockPollStream;
+        impl hyper::service::Service<hyper::Uri> for $name {
+            type Response = $crate::MockPollStream;
             type Error = std::io::Error;
-            type Future = Box<Future<Item=(Self::Transport, hyper::client::connect::Connected), Error=Self::Error> + Send>;
+            type Future = std::pin::Pin<Box<dyn std::future::Future<Output = Result<Self::Response, Self::Error>> + Send>>;
 
-            fn connect(&self, dst: hyper::client::connect::Destination) -> Self::Future {
-                let key = format!("{}://{}", dst.scheme(), dst.host());
-                // ignore port for now
-                match self.0.m.get(&key) {
-                    Some(res) => Box::new(futures::future::ok(($crate::MockPollStream::new(res.clone().into_bytes()), hyper::client::connect::Connected::new()))),
-                    None => panic!("mock_connector doesn't know url {}", key)
-                }
+            fn poll_ready(&mut self, cx: &mut std::task::Context<'_>) -> std::task::Poll<Result<(), Self::Error>> {
+                self.0.poll_ready(cx)
+            }
+
+            fn call(&mut self, req: hyper::Uri) -> Self::Future {
+                self.0.call(req)
             }
         }
     )
@@ -84,19 +85,24 @@ pub struct HostToReplyConnector {
     pub m: HashMap<String, String>
 }
 
-impl connect::Connect for HostToReplyConnector {
-    type Transport = MockPollStream;
+impl Service<Uri> for HostToReplyConnector {
+    type Response = crate::MockPollStream;
     type Error = std::io::Error;
-    type Future = Box<dyn Future<Item=(Self::Transport, connect::Connected), Error=Self::Error> + Send>;
+    type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send>>;
 
-    fn connect(&self, dst: connect::Destination) -> Self::Future {
-        debug!("HostToReplyConnector::connect({:?})", dst);
+    fn poll_ready(&mut self, _cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
+        Poll::Ready(Ok(()))
+    }
 
-        let key = format!("{}://{}", dst.scheme(), dst.host());
-        // ignore port for now
-        match self.m.get(&key) {
-            Some(res) => Box::new(futures::future::ok((MockPollStream::new(res.clone().into_bytes()), connect::Connected::new()))),
-            None => panic!("HostToReplyConnector doesn't know url {}", key)
+    fn call(&mut self, req: Uri) -> Self::Future {
+        debug!("HostToReplyConnector::connect({:?})", req);
+
+        match (|| {
+            // ignore port for now
+            self.m.get(&format!("{}://{}", req.scheme()?, req.host()?))
+        })() {
+            Some(res) => Box::pin(futures::future::ok(MockPollStream::new(res.clone().into_bytes()))),
+            None => panic!("HostToReplyConnector doesn't know url {}", req)
         }
     }
 }
@@ -108,27 +114,28 @@ macro_rules! mock_connector_in_order (
     ($name:ident {
         $( $res:expr )*
     }) => (
+        #[derive(Clone)]
         pub struct $name($crate::SequentialConnector);
 
         impl Default for $name {
             fn default() -> $name {
-                let mut c = $name(Default::default());
-                $(c.0.content.push($res.to_string());)*
-                c
+                Self($crate::SequentialConnector::new(vec![
+                    $($res.to_string(),)*
+                ]))
             }
         }
 
-        impl hyper::client::connect::Connect for $name {
-            type Transport = $crate::MockPollStream;
+        impl hyper::service::Service<hyper::Uri> for $name {
+            type Response = $crate::MockPollStream;
             type Error = std::io::Error;
-            type Future = Box<Future<Item=(Self::Transport, hyper::client::connect::Connected), Error=Self::Error> + Send>;
+            type Future = std::pin::Pin<Box<dyn std::future::Future<Output = Result<Self::Response, Self::Error>> + Send>>;
 
-            fn connect(&self, _dst: hyper::client::connect::Destination) -> Self::Future {
-                assert!(self.0.content.len() != 0, "Not a single streamer return value specified");
+            fn poll_ready(&mut self, cx: &mut std::task::Context<'_>) -> std::task::Poll<Result<(), Self::Error>> {
+                self.0.poll_ready(cx)
+            }
 
-                let data = self.0.content[*self.0.current.lock().unwrap()].clone().into_bytes();
-                *self.0.current.lock().unwrap() += 1;
-                Box::new(futures::future::ok(($crate::MockPollStream::new(data), hyper::client::connect::Connected::new())))
+            fn call(&mut self, req: hyper::Uri) -> Self::Future {
+                self.0.call(req)
             }
         }
     )
@@ -137,32 +144,43 @@ macro_rules! mock_connector_in_order (
 
 /// A connector which requires you to implement the `Default` trait, allowing you
 /// to determine the data it should be initialized with
+#[derive(Clone)]
 pub struct SequentialConnector {
-    pub content: Vec<String>,
-    pub current: Mutex<usize>,
+    pub content: Arc<[String]>,
+    pub current: Arc<Mutex<usize>>,
 }
 
-impl Default for SequentialConnector {
-    fn default() -> Self {
+impl SequentialConnector {
+    pub fn new(content: impl Into<Box<[String]>>) -> Self {
+        let content = content.into();
+        assert!(content.len() != 0, "Not a single streamer return value specified");
+
         SequentialConnector {
-            content: Vec::new(),
-            current: Mutex::new(0)
+            content: content.into(),
+            current: Arc::new(Mutex::new(0))
         }
     }
 }
 
-impl connect::Connect for SequentialConnector {
-    type Transport = MockPollStream;
+impl Service<Uri> for SequentialConnector {
+    type Response = crate::MockPollStream;
     type Error = std::io::Error;
-    type Future = Box<dyn Future<Item=(Self::Transport, connect::Connected), Error=Self::Error> + Send>;
+    type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send>>;
 
-    fn connect(&self, dst: connect::Destination) -> Self::Future {
-        debug!("SequentialConnector::connect({:?})", dst);
+    fn poll_ready(&mut self, _cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
+        Poll::Ready(Ok(()))
+    }
 
-        assert!(self.content.len() != 0, "Not a single streamer return value specified");
+    fn call(&mut self, req: Uri) -> Self::Future {
+        debug!("SequentialConnector::connect({:?})", req);
 
-        let data = self.content[*self.current.lock().unwrap()].clone().into_bytes();
-        *self.current.lock().unwrap() += 1;
-        Box::new(futures::future::ok((MockPollStream::new(data), connect::Connected::new())))
+        let content = self.content.clone();
+        let current = self.current.clone();
+        Box::pin(async move {
+            let mut current = current.lock().await;
+            let data = content[*current].clone().into_bytes();
+            *current = *current + 1;
+            Ok(MockPollStream::new(data))
+        })
     }
 }

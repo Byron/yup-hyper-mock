@@ -11,13 +11,12 @@ license = "MIT"
 edition = "2018"
 
 [dependencies]
-hyper = "0.12"
-log = ">= 0.2"
-futures = "0.1"
-tokio-io = "0.1"
-tokio-core = "0.1.11"
-tokio-reactor = "0.1.1"
+hyper = "0.13.1"
+log = ">= 0.4"
+futures = "0.3"
+tokio = { version = "0.2", features = ["io-driver", "io-util", "stream"] }
 mio = "0.6"
 
 [dev-dependencies]
-env_logger = "0.5"
+env_logger = "0.7"
+tokio = { version = "0.2", features = ["macros"] }
