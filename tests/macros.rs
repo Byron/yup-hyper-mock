@@ -4,7 +4,7 @@ extern crate yup_hyper_mock;
 
 use futures::stream::TryStreamExt;
 
-use hyper::{Body, header, client::Client, Response};
+use hyper::{client::Client, header, Body, Response};
 
 mock_connector_in_order! (MockSequential {
                                   "HTTP/1.1 200 OK\r\n\
@@ -17,7 +17,6 @@ mock_connector_in_order! (MockSequential {
                                  \r\n\
                                  2"
                                   });
-
 
 mock_connector!(MockRedirectPolicy {
     "http://127.0.0.1" =>       "HTTP/1.1 301 Redirect\r\n\
@@ -37,18 +36,21 @@ mock_connector!(MockRedirectPolicy {
 });
 
 async fn result_to_bytes(res: Response<Body>) -> String {
-    let buf = res.into_body().try_fold(Vec::new(), |mut buf, bytes| {
-        buf.extend_from_slice(bytes.as_ref());
-        async move { Ok(buf) }
-    }).await.unwrap();
+    let buf = res
+        .into_body()
+        .try_fold(Vec::new(), |mut buf, bytes| {
+            buf.extend_from_slice(bytes.as_ref());
+            async move { Ok(buf) }
+        })
+        .await
+        .unwrap();
     String::from_utf8(buf).unwrap()
 }
 
 /// Just to test the result of `mock_connector!` - this test was copied from hyper.
 #[tokio::test]
 async fn test_redirect_followall() {
-    let client = Client::builder()
-        .build::<MockRedirectPolicy, Body>(MockRedirectPolicy::default());
+    let client = Client::builder().build::<MockRedirectPolicy, Body>(MockRedirectPolicy::default());
 
     async fn check_server(client: &Client<MockRedirectPolicy, Body>, url: &str, server: &str) {
         let res = client.get(url.parse().unwrap()).await.unwrap();
@@ -63,12 +65,17 @@ async fn test_redirect_followall() {
 
 #[tokio::test]
 async fn test_sequential_mock() {
-    let client = Client::builder()
-        .build::<MockSequential, Body>(MockSequential::default());
+    let client = Client::builder().build::<MockSequential, Body>(MockSequential::default());
 
-    let res = client.get("http://127.0.0.1".parse().unwrap()).await.unwrap();
+    let res = client
+        .get("http://127.0.0.1".parse().unwrap())
+        .await
+        .unwrap();
     assert_eq!(result_to_bytes(res).await, "1");
 
-    let res = client.get("http://127.0.0.1".parse().unwrap()).await.unwrap();
+    let res = client
+        .get("http://127.0.0.1".parse().unwrap())
+        .await
+        .unwrap();
     assert_eq!(result_to_bytes(res).await, "2");
 }

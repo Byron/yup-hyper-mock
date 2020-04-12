@@ -35,8 +35,8 @@ use std::sync::Arc;
 use std::task::{Context, Poll};
 
 use futures;
-use futures::Future;
 use futures::lock::Mutex;
+use futures::Future;
 use hyper::{service::Service, Uri};
 
 mod streams;
@@ -82,7 +82,7 @@ macro_rules! mock_connector (
 /// singular reply the host is supposed to make.
 #[derive(Default, Clone)]
 pub struct HostToReplyConnector {
-    pub m: HashMap<String, String>
+    pub m: HashMap<String, String>,
 }
 
 impl Service<Uri> for HostToReplyConnector {
@@ -101,8 +101,10 @@ impl Service<Uri> for HostToReplyConnector {
             // ignore port for now
             self.m.get(&format!("{}://{}", req.scheme()?, req.host()?))
         })() {
-            Some(res) => Box::pin(futures::future::ok(MockPollStream::new(res.clone().into_bytes()))),
-            None => panic!("HostToReplyConnector doesn't know url {}", req)
+            Some(res) => Box::pin(futures::future::ok(MockPollStream::new(
+                res.clone().into_bytes(),
+            ))),
+            None => panic!("HostToReplyConnector doesn't know url {}", req),
         }
     }
 }
@@ -141,7 +143,6 @@ macro_rules! mock_connector_in_order (
     )
 );
 
-
 /// A connector which requires you to implement the `Default` trait, allowing you
 /// to determine the data it should be initialized with
 #[derive(Clone)]
@@ -153,11 +154,14 @@ pub struct SequentialConnector {
 impl SequentialConnector {
     pub fn new(content: impl Into<Box<[String]>>) -> Self {
         let content = content.into();
-        assert!(content.len() != 0, "Not a single streamer return value specified");
+        assert!(
+            content.len() != 0,
+            "Not a single streamer return value specified"
+        );
 
         SequentialConnector {
             content: content.into(),
-            current: Arc::new(Mutex::new(0))
+            current: Arc::new(Mutex::new(0)),
         }
     }
 }
