@@ -1,3 +1,4 @@
+[![Rust](https://github.com/Byron/yup-hyper-mock/workflows/Rust/badge.svg)](https://github.com/Byron/yup-hyper-mock/actions)
 [![Crates.io](https://img.shields.io/crates/v/yup-hyper-mock.svg)](https://crates.io/crates/yup-hyper-mock)
 
 `hyper-mock` is a utility library to help hyper clients with their testing. It provides types used to test hyper itself, most notably, mock connections and macros to ease their use.
