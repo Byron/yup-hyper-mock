@@ -21,7 +21,5 @@ jobs:
       run: cargo fmt --all -- --check
     - name: test
       run: cargo test
-    - name: bench
-      run: cargo bench
     - name: doc
       run: cargo doc
