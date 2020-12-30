@@ -7,16 +7,16 @@ use futures::stream::TryStreamExt;
 use hyper::{client::Client, header, Body, Response};
 
 mock_connector_in_order! (MockSequential {
-                                  "HTTP/1.1 200 OK\r\n\
-                                 Server: BOGUS\r\n\
-                                 \r\n\
-                                 1"
+"HTTP/1.1 200 OK\r\n\
+Server: BOGUS\r\n\
+\r\n\
+1"
 
-                                 "HTTP/1.1 200 OK\r\n\
-                                 Server: BOGUS\r\n\
-                                 \r\n\
-                                 2"
-                                  });
+"HTTP/1.1 200 OK\r\n\
+Server: BOGUS\r\n\
+\r\n\
+2"
+});
 
 mock_connector!(MockRedirectPolicy {
     "http://127.0.0.1" =>       "HTTP/1.1 301 Redirect\r\n\

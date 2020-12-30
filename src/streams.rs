@@ -7,7 +7,7 @@ use std::{
 };
 
 use hyper::client::connect::{Connected, Connection};
-use tokio::io::{AsyncRead, AsyncWrite};
+use tokio::io::{AsyncRead, AsyncWrite, ReadBuf};
 
 pub struct MockPollStream {
     data: Vec<u8>,
@@ -31,8 +31,8 @@ impl AsyncRead for MockPollStream {
     fn poll_read(
         mut self: Pin<&mut Self>,
         cx: &mut Context,
-        buf: &mut [u8],
-    ) -> Poll<io::Result<usize>> {
+        buf: &mut ReadBuf,
+    ) -> Poll<io::Result<()>> {
         if !self.ready_for_response {
             trace!("Not ready for read yet");
             self.waker = Some(cx.waker().clone());
@@ -40,21 +40,21 @@ impl AsyncRead for MockPollStream {
         }
         trace!(
             "Buffer size: {}, Data size: {}, Pos: {}",
-            buf.len(),
+            buf.remaining(),
             self.data.len(),
             self.pos
         );
-        let n = min(buf.len(), self.data.len() - self.pos);
+        let n = min(buf.remaining(), self.data.len() - self.pos);
         let read_until = self.pos + n;
-        buf[..n].copy_from_slice(&self.data[self.pos..read_until]);
+        buf.put_slice(&self.data[self.pos..read_until]);
         self.pos = read_until;
         trace!(
             "Read {} bytes: '{}'",
             n,
-            str::from_utf8(&buf[..n]).unwrap_or("<bad utf-8>")
+            str::from_utf8(&self.data[self.pos..read_until]).unwrap_or("<bad utf-8>")
         );
         self.waker = Some(cx.waker().clone());
-        Poll::Ready(Ok(n))
+        Poll::Ready(Ok(()))
     }
 }
 

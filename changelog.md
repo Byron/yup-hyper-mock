@@ -1,3 +1,9 @@
+<a name="v5.14.0"></a>
+## v5.14.0 (2020-12-30)
+
+Upgrade to Hyper 0.14 and Tokio 1.0, which will break any dependencies in Tokio 0.2
+environments.
+
 <a name="v3.12.0"></a>
 ## v3.12.0 (2018-06-10)
 
