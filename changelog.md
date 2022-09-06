@@ -1,6 +1,6 @@
 <a name="v5.14.0"></a>
 
-## Unreleased
+## 6.0.0 (2022-09-06)
 
 ### BREAKING
 
@@ -10,7 +10,7 @@
 
 <csr-read-only-do-not-edit/>
 
- - 1 commit contributed to the release.
+ - 2 commits contributed to the release.
  - 0 commits were understood as [conventional](https://www.conventionalcommits.org).
  - 0 issues like '(#ID)' where seen in commit messages
 
@@ -21,6 +21,7 @@
 <details><summary>view details</summary>
 
  * **Uncategorized**
+    - update changelog ([`4f8d5b3`](https://github.com/Byron/yup-hyper-mock/commit/4f8d5b35b02d49c8efd8be8e68db8ce2767ccf3e))
     - Bump major version ([`9bc7a04`](https://github.com/Byron/yup-hyper-mock/commit/9bc7a042def5ea1901c33800190f1f5eb413a3b4))
 </details>
 
@@ -280,7 +281,9 @@ Upgrade to hyper v0.10 - this might break dependencies, thus the major version j
 <csr-unknown>
 <csr-unknown>
 <csr-unknown>
+<csr-unknown>
 <a name="v1.2.0"></a><csr-unknown/>
+<csr-unknown/>
 <csr-unknown/>
 <csr-unknown/>
 
