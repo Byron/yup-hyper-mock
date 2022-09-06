@@ -1,12 +1,34 @@
 <a name="v5.14.0"></a>
 
-## 5.14.1 (2022-09-06)
-
-<csr-id-9f8bb80c4b45e9360f7ba6e9b21710b3a74e9b34/>
+## Unreleased
 
 ### BREAKING
 
 - upgrade `mio` from 0.6 to 0.8.
+
+### Commit Statistics
+
+<csr-read-only-do-not-edit/>
+
+ - 1 commit contributed to the release.
+ - 0 commits were understood as [conventional](https://www.conventionalcommits.org).
+ - 0 issues like '(#ID)' where seen in commit messages
+
+### Commit Details
+
+<csr-read-only-do-not-edit/>
+
+<details><summary>view details</summary>
+
+ * **Uncategorized**
+    - Bump major version ([`9bc7a04`](https://github.com/Byron/yup-hyper-mock/commit/9bc7a042def5ea1901c33800190f1f5eb413a3b4))
+</details>
+
+## 5.14.1 (2022-09-06)
+
+<csr-id-9f8bb80c4b45e9360f7ba6e9b21710b3a74e9b34/>
+
+YANKED
 
 ### Chore
 
@@ -16,7 +38,7 @@
 
 <csr-read-only-do-not-edit/>
 
- - 2 commits contributed to the release.
+ - 3 commits contributed to the release.
  - 613 days passed between releases.
  - 1 commit was understood as [conventional](https://www.conventionalcommits.org).
  - 0 issues like '(#ID)' where seen in commit messages
@@ -28,6 +50,7 @@
 <details><summary>view details</summary>
 
  * **Uncategorized**
+    - Release yup-hyper-mock v5.14.1 ([`ffa532c`](https://github.com/Byron/yup-hyper-mock/commit/ffa532cf2a49d669a826253eb641b2579b76c815))
     - prepare changelog for release ([`2152092`](https://github.com/Byron/yup-hyper-mock/commit/2152092f78897fea82b7df6ceeb382ba40b81209))
     - bump mio dependency ([`9f8bb80`](https://github.com/Byron/yup-hyper-mock/commit/9f8bb80c4b45e9360f7ba6e9b21710b3a74e9b34))
 </details>
@@ -256,7 +279,9 @@ Upgrade to hyper v0.10 - this might break dependencies, thus the major version j
 
 <csr-unknown>
 <csr-unknown>
+<csr-unknown>
 <a name="v1.2.0"></a><csr-unknown/>
+<csr-unknown/>
 <csr-unknown/>
 
 ## v1.3.2 (2015-12-24)
@@ -633,9 +658,6 @@ Upgrade to hyper v0.10 - this might break dependencies, thus the major version j
     - added sublime-linter rust support ([`e624b3b`](https://github.com/Byron/yup-hyper-mock/commit/e624b3b7fcf54099209e02c25114298839e628ca))
 </details>
 
-<csr-unknown>
-Features<a name="v0.1.5"></a><csr-unknown/>
-
 ## v0.1.5 (2015-04-08)
 
 ### Bug Fixes
@@ -724,5 +746,5 @@ Features<a name="v0.1.5"></a><csr-unknown/>
 </details>
 
 <csr-unknown>
-remove old_io entirely (https://github.com/Byron/yup-hyper-mock/commit/d6c4943bd3e9f2029baa56e68e60b129f2afc9cbd6c4943b)Features<csr-unknown/>
+remove old_io entirely (https://github.com/Byron/yup-hyper-mock/commit/d6c4943bd3e9f2029baa56e68e60b129f2afc9cbd6c4943b)<csr-unknown/>
 
