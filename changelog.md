@@ -1,6 +1,8 @@
 <a name="v5.14.0"></a>
 
-## Unreleased
+## 5.14.1 (2022-09-06)
+
+<csr-id-9f8bb80c4b45e9360f7ba6e9b21710b3a74e9b34/>
 
 ### BREAKING
 
@@ -14,7 +16,7 @@
 
 <csr-read-only-do-not-edit/>
 
- - 1 commit contributed to the release.
+ - 2 commits contributed to the release.
  - 613 days passed between releases.
  - 1 commit was understood as [conventional](https://www.conventionalcommits.org).
  - 0 issues like '(#ID)' where seen in commit messages
@@ -26,10 +28,13 @@
 <details><summary>view details</summary>
 
  * **Uncategorized**
+    - prepare changelog for release ([`2152092`](https://github.com/Byron/yup-hyper-mock/commit/2152092f78897fea82b7df6ceeb382ba40b81209))
     - bump mio dependency ([`9f8bb80`](https://github.com/Byron/yup-hyper-mock/commit/9f8bb80c4b45e9360f7ba6e9b21710b3a74e9b34))
 </details>
 
 ## v5.14.0 (2020-12-30)
+
+<csr-id-be8c9e3b78d9efd0713737e9cbbb15f421ee6eb1/>
 
 Upgrade to Hyper 0.14 and Tokio 1.0, which will break any dependencies in Tokio 0.2
 environments.
@@ -171,6 +176,11 @@ environments.
 
 ## v3.12.0 (2018-06-10)
 
+<csr-id-3c129bc41eee41dfa40f6584ec950de230083451/>
+<csr-id-3a9d8fc47d07c71d20311b07aea331e3ae8e38e1/>
+<csr-id-58b5733b021160c0637687612fe61035d3dd1791/>
+<csr-id-b85385f7a69766a2271df90368d06266dc997a63/>
+
 Upgrade to hyper v0.12 - this might break dependencies, thus the major version jump.
 The minor version now tracks the hyper version - it's a feature :D.
 
@@ -245,9 +255,13 @@ Upgrade to hyper v0.10 - this might break dependencies, thus the major version j
 * **hyper-up**  work with hyper 0.6.0 ([50199133](https://github.com/Byron/yup-hyper-mock/commit/501991335dde3c88e845277e3772708cc1f5eef0))
 
 <csr-unknown>
+<csr-unknown>
 <a name="v1.2.0"></a><csr-unknown/>
+<csr-unknown/>
 
 ## v1.3.2 (2015-12-24)
+
+<csr-id-8f09de7b03ebea21b37d868f9da99ed7845df542/>
 
 ### Chore
 
@@ -285,6 +299,8 @@ Upgrade to hyper v0.10 - this might break dependencies, thus the major version j
 
 ## v1.3.0 (2015-06-26)
 
+<csr-id-e81c7a3001415f3af7d86ea49bd6d9d74631ff61/>
+
 ### Chore
 
  - <csr-id-e81c7a3001415f3af7d86ea49bd6d9d74631ff61/> v1.3.0
@@ -315,6 +331,9 @@ Upgrade to hyper v0.10 - this might break dependencies, thus the major version j
 
 ## v1.2.0 (2015-06-18)
 
+<csr-id-d0a72f96a7e1507c77af2daa183dfe2a48a4de27/>
+<csr-id-f59454a8b70a1f262dea55b387fe0da1f8292886/>
+
 #### Features
 
 * **lib**  
@@ -333,8 +352,8 @@ Upgrade to hyper v0.10 - this might break dependencies, thus the major version j
 
  - <csr-id-667633168574c731ec0aa1f0266aa3be79e5d8d6/> added HostToReplyConnector type
    * a type allowing a singular reply per host url. It can be useful
-     if you cannot use the provided convenience macro, `mock_connector`.
-   * macro was adjusted to use that type instead, making it far more
+   if you cannot use the provided convenience macro, `mock_connector`.
+* macro was adjusted to use that type instead, making it far more
      readable.
 
 ### Chore
@@ -362,6 +381,9 @@ Upgrade to hyper v0.10 - this might break dependencies, thus the major version j
 </details>
 
 ## v1.1.0 (2015-06-18)
+
+<csr-id-0f5a4ae0db8ad87bef78c38073eec3aaeb9d3ead/>
+<csr-id-c95249289b4407ba8ac9a7fb7f7ad89b6d126bad/>
 
 ### Chore
 
@@ -403,6 +425,10 @@ Upgrade to hyper v0.10 - this might break dependencies, thus the major version j
 </details>
 
 ## 1.0.1 (2015-06-11)
+
+<csr-id-9aac86a680e57254767d8c7eb1b7318f6923c4ec/>
+<csr-id-7d669e40073913394660546ee59a2ef5df81c9c1/>
+<csr-id-c38a54f877c6460fa36c2d8d71142237c9dec541/>
 
 ### Other
 
@@ -450,10 +476,11 @@ Upgrade to hyper v0.10 - this might break dependencies, thus the major version j
     - Merge branch 'next' ([`4dda44d`](https://github.com/Byron/yup-hyper-mock/commit/4dda44dde36f71782d3dd7b040017c0181fba94f))
 </details>
 
-<csr-unknown>
-<a name="1.0.0"></a><csr-unknown/>
-
 ## 1.0.0 (2015-05-18)
+
+<csr-id-cc72c7a560ce849a12e6401942f4ba166e5c4b9b/>
+<csr-id-ee56de4dead136b3ca5a3eda6ca7057f9074e261/>
+<csr-id-555a22f9786d43ea03d475429c45ef501eda74ea/>
 
 ### Chore
 
@@ -499,10 +526,10 @@ Upgrade to hyper v0.10 - this might break dependencies, thus the major version j
     - adapt to hyper >v0.4.0 ([`388f9a0`](https://github.com/Byron/yup-hyper-mock/commit/388f9a0e3c7ed057dabe30aa209e0c05039c2274))
 </details>
 
-<csr-unknown>
-<a name="v0.1.8"></a><csr-unknown/>
-
 ## v0.1.8 (2015-05-08)
+
+<csr-id-6100662f37fe1bfb7dfb89ce8322eb14b427dfb2/>
+<csr-id-3c1e3e89a22ea48307286550a92abc76a5eb7212/>
 
 #### Features
 
@@ -552,10 +579,11 @@ Upgrade to hyper v0.10 - this might break dependencies, thus the major version j
     - switch to travis-cargo ([`3c1e3e8`](https://github.com/Byron/yup-hyper-mock/commit/3c1e3e89a22ea48307286550a92abc76a5eb7212))
 </details>
 
-<csr-unknown>
-<a name="v0.1.6"></a><csr-unknown/>
-
 ## v0.1.6 (2015-05-04)
+
+<csr-id-24f20997fbea44f706cc41a31a20391b82fa8549/>
+<csr-id-8a218b5d1159b23c87082ce81b0cbe3220a673d3/>
+<csr-id-e624b3b7fcf54099209e02c25114298839e628ca/>
 
 ### Bug Fixes
 
@@ -563,14 +591,7 @@ Upgrade to hyper v0.10 - this might break dependencies, thus the major version j
  - <csr-id-b520fa77f44262598e92149f8fd995b0543b7739/> use $crate variable instead of ::mock
    That way, it will actually work if the crate-name of `yup-hyper-mock`
    is not changed to mock.
-
-#### Features
-
 * **clog**  added changelog, managed by clog ([1a1b3fa3](https://github.com/Byron/yup-hyper-mock/commit/1a1b3fa34d1c9c919a38a3a2a392422cd71c8db8))
-
-
-
-<a name="v0.1.5"></a>
 
 ### New Features
 
@@ -612,6 +633,9 @@ Upgrade to hyper v0.10 - this might break dependencies, thus the major version j
     - added sublime-linter rust support ([`e624b3b`](https://github.com/Byron/yup-hyper-mock/commit/e624b3b7fcf54099209e02c25114298839e628ca))
 </details>
 
+<csr-unknown>
+Features<a name="v0.1.5"></a><csr-unknown/>
+
 ## v0.1.5 (2015-04-08)
 
 ### Bug Fixes
@@ -639,9 +663,6 @@ Upgrade to hyper v0.10 - this might break dependencies, thus the major version j
     - v0.1.5 (hyper adjustments) ([`65b3baa`](https://github.com/Byron/yup-hyper-mock/commit/65b3baa0b7ffe05cf1047010d6de3273f3057ffd))
 </details>
 
-<csr-unknown>
-<a name="v0.1.4"></a><csr-unknown/>
-
 ## v0.1.4 (2015-04-07)
 
 ### Bug Fixes
@@ -659,12 +680,7 @@ Upgrade to hyper v0.10 - this might break dependencies, thus the major version j
    be tested actually.
  - <csr-id-6e8616a7180fec5d07ab85230fa7d54ee2ee3c97/> rustc (be9bd7c93 2015-04-05)
    * fix compile warnings
-
-#### Features
-
 * **mock**  allow shared mock types ([981d8bfb](https://github.com/Byron/yup-hyper-mock/commit/981d8bfb408c63d7705d565f734207c8df567d2f))
-
-
 
 ### New Features
 
@@ -708,5 +724,5 @@ Upgrade to hyper v0.10 - this might break dependencies, thus the major version j
 </details>
 
 <csr-unknown>
-cargo  added license info (https://github.com/Byron/yup-hyper-mock/commit/c112b907de1d0a380947d22443466c5beed12ef0c112b907)macros  work as well now (thanks, oauth2) (https://github.com/Byron/yup-hyper-mock/commit/bbb0e73953c8931f7ed1ecfe85f7f3198bedeeb1bbb0e739)<csr-unknown/>
+remove old_io entirely (https://github.com/Byron/yup-hyper-mock/commit/d6c4943bd3e9f2029baa56e68e60b129f2afc9cbd6c4943b)Features<csr-unknown/>
 
