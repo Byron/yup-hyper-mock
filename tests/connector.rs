@@ -1,23 +1,19 @@
 //! Test usage of connectors which work entirely without macros
 
-use env_logger;
+use std::io;
 
-use futures::stream::TryStreamExt;
+use http_body_util::{combinators::BoxBody, BodyExt};
+use hyper::{
+    body::{Bytes, Incoming},
+    header, Response,
+};
 
-use hyper::{client::Client, header, Body, Response};
-
+use hyper_util::{client::legacy::Client, rt::TokioExecutor};
 use yup_hyper_mock::{HostToReplyConnector, SequentialConnector};
 
-async fn result_to_bytes(res: Response<Body>) -> String {
-    let buf = res
-        .into_body()
-        .try_fold(Vec::new(), |mut buf, bytes| {
-            buf.extend_from_slice(bytes.as_ref());
-            async move { Ok(buf) }
-        })
-        .await
-        .unwrap();
-    String::from_utf8(buf).unwrap()
+async fn result_to_bytes(res: Response<Incoming>) -> String {
+    let buf = res.into_body().collect().await.unwrap().to_bytes();
+    String::from_utf8(buf.to_vec()).unwrap()
 }
 
 #[tokio::test]
@@ -36,7 +32,8 @@ async fn test_sequential_mock() {
         .to_string(),
     ]);
 
-    let client = Client::builder().build::<SequentialConnector, Body>(c);
+    let client = Client::builder(TokioExecutor::new())
+        .build::<SequentialConnector, BoxBody<Bytes, io::Error>>(c);
 
     let res = client
         .get("http://127.0.0.1".parse().unwrap())
@@ -83,9 +80,13 @@ async fn test_redirect_followall() {
         .to_string(),
     );
 
-    let client = Client::builder().build(c);
+    let client = Client::builder(TokioExecutor::new()).build(c);
 
-    async fn check_server(client: &Client<HostToReplyConnector, Body>, url: &str, server: &str) {
+    async fn check_server(
+        client: &Client<HostToReplyConnector, BoxBody<Bytes, io::Error>>,
+        url: &str,
+        server: &str,
+    ) {
         let res = client.get(url.parse().unwrap()).await.unwrap();
         let header = header::HeaderValue::from_str(&server).unwrap();
         assert_eq!(res.headers().get(header::SERVER), Some(&header));

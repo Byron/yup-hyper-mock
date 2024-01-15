@@ -1,6 +1,6 @@
 [package]
 name = "yup-hyper-mock"
-version = "6.0.0"
+version = "8.0.0"
 authors = ["Sean McArthur <sean.monstar@gmail.com>",
            "Jonathan Reem <jonathan.reem@gmail.com>",
            "Sebastian Thiel <byronimo@gmail.com>",
@@ -10,15 +10,17 @@ repository = "https://github.com/Byron/yup-hyper-mock"
 documentation = "http://byron.github.io/yup-hyper-mock"
 license = "MIT"
 include = ["src/**/*", "Cargo.toml"]
-edition = "2018"
+edition = "2021"
 
 [dependencies]
-hyper = { version = "0.14", features = ["client", "http1", "runtime", "stream"] }
+http-body-util = "0.1.0"
+hyper = { version = "1.1", features = ["client", "http1"] }
+hyper-util = { version = "0.1.2", features = ["tokio", "http1", "client-legacy"] }
 log = ">= 0.4"
 futures = "0.3"
-tokio = { version = "1.0", features = ["io-util"] }
-mio = "0.8"
+tokio = { version = "1.35", features = ["io-util"] }
+tower-service = "0.3"
 
 [dev-dependencies]
-env_logger = "0.7"
+env_logger = "0.10"
 tokio = { version = "1.0", features = ["rt", "macros"] }

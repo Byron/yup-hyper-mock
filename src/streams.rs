@@ -6,8 +6,9 @@ use std::{
     task::{Context, Poll, Waker},
 };
 
-use hyper::client::connect::{Connected, Connection};
-use tokio::io::{AsyncRead, AsyncWrite, ReadBuf};
+use hyper::rt::ReadBufCursor;
+use hyper_util::client::legacy::connect::{Connected, Connection};
+use log::trace;
 
 pub struct MockPollStream {
     data: Vec<u8>,
@@ -27,27 +28,29 @@ impl MockPollStream {
     }
 }
 
-impl AsyncRead for MockPollStream {
+impl hyper::rt::Read for MockPollStream {
     fn poll_read(
         mut self: Pin<&mut Self>,
-        cx: &mut Context,
-        buf: &mut ReadBuf,
+        cx: &mut Context<'_>,
+        mut buf: ReadBufCursor<'_>,
     ) -> Poll<io::Result<()>> {
         if !self.ready_for_response {
             trace!("Not ready for read yet");
             self.waker = Some(cx.waker().clone());
             return Poll::Pending;
         }
+        let mut read_buf = unsafe { tokio::io::ReadBuf::uninit(buf.as_mut()) };
         trace!(
             "Buffer size: {}, Data size: {}, Pos: {}",
-            buf.remaining(),
+            read_buf.remaining(),
             self.data.len(),
             self.pos
         );
-        let n = min(buf.remaining(), self.data.len() - self.pos);
+        let n = min(read_buf.remaining(), self.data.len() - self.pos);
         let read_until = self.pos + n;
-        buf.put_slice(&self.data[self.pos..read_until]);
+        read_buf.put_slice(&self.data[self.pos..read_until]);
         self.pos = read_until;
+        unsafe { buf.advance(n) };
         trace!(
             "Read {} bytes: '{}'",
             n,
@@ -58,8 +61,12 @@ impl AsyncRead for MockPollStream {
     }
 }
 
-impl AsyncWrite for MockPollStream {
-    fn poll_write(self: Pin<&mut Self>, _cx: &mut Context, data: &[u8]) -> Poll<io::Result<usize>> {
+impl hyper::rt::Write for MockPollStream {
+    fn poll_write(
+        self: Pin<&mut Self>,
+        _cx: &mut Context<'_>,
+        data: &[u8],
+    ) -> Poll<io::Result<usize>> {
         trace!(
             "Request data: {}",
             str::from_utf8(data).unwrap_or("<bad utf-8>")
@@ -74,11 +81,11 @@ impl AsyncWrite for MockPollStream {
         Poll::Ready(Ok(data.len()))
     }
 
-    fn poll_flush(self: Pin<&mut Self>, _cx: &mut Context) -> Poll<io::Result<()>> {
+    fn poll_flush(self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<io::Result<()>> {
         Poll::Ready(Ok(()))
     }
 
-    fn poll_shutdown(self: Pin<&mut Self>, _cx: &mut Context) -> Poll<io::Result<()>> {
+    fn poll_shutdown(self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<io::Result<()>> {
         Poll::Ready(Ok(()))
     }
 }
