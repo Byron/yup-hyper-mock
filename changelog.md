@@ -1,5 +1,35 @@
 <a name="v5.14.0"></a>
 
+## 8.0.0 (2024-01-15)
+
+### Other
+
+ - <csr-id-d2d38451f64ca75e40484bceb27f51e90e759cb0/> Update to hyper 1.x
+
+### New Features (BREAKING)
+
+ - <csr-id-400dd95ce6159b1d8fc7b494612f0c47eef08467/> support for hyper 1.x
+
+### Commit Statistics
+
+<csr-read-only-do-not-edit/>
+
+ - 2 commits contributed to the release.
+ - 497 days passed between releases.
+ - 2 commits were understood as [conventional](https://www.conventionalcommits.org).
+ - 0 issues like '(#ID)' were seen in commit messages
+
+### Commit Details
+
+<csr-read-only-do-not-edit/>
+
+<details><summary>view details</summary>
+
+ * **Uncategorized**
+    - Support for hyper 1.x ([`400dd95`](https://github.com/Byron/yup-hyper-mock/commit/400dd95ce6159b1d8fc7b494612f0c47eef08467))
+    - Update to hyper 1.x ([`d2d3845`](https://github.com/Byron/yup-hyper-mock/commit/d2d38451f64ca75e40484bceb27f51e90e759cb0))
+</details>
+
 ## 6.0.0 (2022-09-06)
 
 ### BREAKING
@@ -10,9 +40,9 @@
 
 <csr-read-only-do-not-edit/>
 
- - 2 commits contributed to the release.
+ - 3 commits contributed to the release.
  - 0 commits were understood as [conventional](https://www.conventionalcommits.org).
- - 0 issues like '(#ID)' where seen in commit messages
+ - 0 issues like '(#ID)' were seen in commit messages
 
 ### Commit Details
 
@@ -21,7 +51,8 @@
 <details><summary>view details</summary>
 
  * **Uncategorized**
-    - update changelog ([`4f8d5b3`](https://github.com/Byron/yup-hyper-mock/commit/4f8d5b35b02d49c8efd8be8e68db8ce2767ccf3e))
+    - Release yup-hyper-mock v6.0.0 ([`33e4f24`](https://github.com/Byron/yup-hyper-mock/commit/33e4f24d0585dfc736d9e74d89a3f509e7fb3c20))
+    - Update changelog ([`4f8d5b3`](https://github.com/Byron/yup-hyper-mock/commit/4f8d5b35b02d49c8efd8be8e68db8ce2767ccf3e))
     - Bump major version ([`9bc7a04`](https://github.com/Byron/yup-hyper-mock/commit/9bc7a042def5ea1901c33800190f1f5eb413a3b4))
 </details>
 
@@ -42,7 +73,7 @@ YANKED
  - 3 commits contributed to the release.
  - 613 days passed between releases.
  - 1 commit was understood as [conventional](https://www.conventionalcommits.org).
- - 0 issues like '(#ID)' where seen in commit messages
+ - 0 issues like '(#ID)' were seen in commit messages
 
 ### Commit Details
 
@@ -52,8 +83,8 @@ YANKED
 
  * **Uncategorized**
     - Release yup-hyper-mock v5.14.1 ([`ffa532c`](https://github.com/Byron/yup-hyper-mock/commit/ffa532cf2a49d669a826253eb641b2579b76c815))
-    - prepare changelog for release ([`2152092`](https://github.com/Byron/yup-hyper-mock/commit/2152092f78897fea82b7df6ceeb382ba40b81209))
-    - bump mio dependency ([`9f8bb80`](https://github.com/Byron/yup-hyper-mock/commit/9f8bb80c4b45e9360f7ba6e9b21710b3a74e9b34))
+    - Prepare changelog for release ([`2152092`](https://github.com/Byron/yup-hyper-mock/commit/2152092f78897fea82b7df6ceeb382ba40b81209))
+    - Bump mio dependency ([`9f8bb80`](https://github.com/Byron/yup-hyper-mock/commit/9f8bb80c4b45e9360f7ba6e9b21710b3a74e9b34))
 </details>
 
 ## v5.14.0 (2020-12-30)
@@ -76,7 +107,7 @@ environments.
  - 5 commits contributed to the release over the course of 262 calendar days.
  - 333 days passed between releases.
  - 1 commit was understood as [conventional](https://www.conventionalcommits.org).
- - 0 issues like '(#ID)' where seen in commit messages
+ - 0 issues like '(#ID)' were seen in commit messages
 
 ### Commit Details
 
@@ -86,10 +117,10 @@ environments.
 
  * **Uncategorized**
     - Update to Hyper 0.14 and Tokio 1.0 ([`be8c9e3`](https://github.com/Byron/yup-hyper-mock/commit/be8c9e3b78d9efd0713737e9cbbb15f421ee6eb1))
-    - remove bench run, as there are none and release builds take time ([`a34fbcf`](https://github.com/Byron/yup-hyper-mock/commit/a34fbcf960908dacc9b1e26022c6ceffe8099144))
+    - Remove bench run, as there are none and release builds take time ([`a34fbcf`](https://github.com/Byron/yup-hyper-mock/commit/a34fbcf960908dacc9b1e26022c6ceffe8099144))
     - Apply cargo-fmt ([`e5c123f`](https://github.com/Byron/yup-hyper-mock/commit/e5c123f848d2cbd9c37ca723077c33ed74734d6d))
-    - update badge ([`23beab9`](https://github.com/Byron/yup-hyper-mock/commit/23beab9b992e3e1ca0990551555a5fdd5575387c))
-    - add github actions; remove travis :*( ([`a7310ba`](https://github.com/Byron/yup-hyper-mock/commit/a7310bae60c1b17b3565b015580d269f84e7efe9))
+    - Update badge ([`23beab9`](https://github.com/Byron/yup-hyper-mock/commit/23beab9b992e3e1ca0990551555a5fdd5575387c))
+    - Add github actions; remove travis :*( ([`a7310ba`](https://github.com/Byron/yup-hyper-mock/commit/a7310bae60c1b17b3565b015580d269f84e7efe9))
 </details>
 
 ## v4.0.0 (2020-02-01)
@@ -105,7 +136,7 @@ environments.
  - 5 commits contributed to the release.
  - 344 days passed between releases.
  - 1 commit was understood as [conventional](https://www.conventionalcommits.org).
- - 0 issues like '(#ID)' where seen in commit messages
+ - 0 issues like '(#ID)' were seen in commit messages
 
 ### Commit Details
 
@@ -118,7 +149,7 @@ environments.
     - Optimize package size ([`a792dc5`](https://github.com/Byron/yup-hyper-mock/commit/a792dc5bbba5183887c08d332258591debafe884))
     - Remove clog - not a fan of subject-line rules anymore ([`7d7dcba`](https://github.com/Byron/yup-hyper-mock/commit/7d7dcbac1df89b3dee74760f6c8386da626acc8c))
     - Simplify .travis; remove editor settings ([`06da158`](https://github.com/Byron/yup-hyper-mock/commit/06da158e891da927c7658353445b607b629fbc8b))
-    - update to `async`/`await` ([`abb9613`](https://github.com/Byron/yup-hyper-mock/commit/abb96132641328eeca7b3a3f10ea574bed5dc9ab))
+    - Update to `async`/`await` ([`abb9613`](https://github.com/Byron/yup-hyper-mock/commit/abb96132641328eeca7b3a3f10ea574bed5dc9ab))
 </details>
 
 ## v3.15.0 (2019-02-21)
@@ -130,7 +161,7 @@ environments.
  - 5 commits contributed to the release.
  - 62 days passed between releases.
  - 0 commits were understood as [conventional](https://www.conventionalcommits.org).
- - 0 issues like '(#ID)' where seen in commit messages
+ - 0 issues like '(#ID)' were seen in commit messages
 
 ### Commit Details
 
@@ -161,7 +192,7 @@ environments.
  - 3 commits contributed to the release over the course of 61 calendar days.
  - 138 days passed between releases.
  - 1 commit was understood as [conventional](https://www.conventionalcommits.org).
- - 0 issues like '(#ID)' where seen in commit messages
+ - 0 issues like '(#ID)' were seen in commit messages
 
 ### Commit Details
 
@@ -171,7 +202,7 @@ environments.
 
  * **Uncategorized**
     - Bump version; include fix for polling logic ([`df83f73`](https://github.com/Byron/yup-hyper-mock/commit/df83f735c9e42ec8d19feb3b466c1964301fd00c))
-    - set clear_write_ready ([`f2acccd`](https://github.com/Byron/yup-hyper-mock/commit/f2acccd03f1e96306c31105325f4b6a83c741924))
+    - Set clear_write_ready ([`f2acccd`](https://github.com/Byron/yup-hyper-mock/commit/f2acccd03f1e96306c31105325f4b6a83c741924))
     - Fix GFM ([`a6dfd2b`](https://github.com/Byron/yup-hyper-mock/commit/a6dfd2bc6017174866818ce20d37321b1d0a7afe))
 </details>
 
@@ -184,7 +215,7 @@ environments.
  - 3 commits contributed to the release over the course of 2 calendar days.
  - 55 days passed between releases.
  - 0 commits were understood as [conventional](https://www.conventionalcommits.org).
- - 0 issues like '(#ID)' where seen in commit messages
+ - 0 issues like '(#ID)' were seen in commit messages
 
 ### Commit Details
 
@@ -193,7 +224,7 @@ environments.
 <details><summary>view details</summary>
 
  * **Uncategorized**
-    - bump version for: Implement clone for mock ([`73fa137`](https://github.com/Byron/yup-hyper-mock/commit/73fa137837f174eb771b136d6736a95f7f153103))
+    - Bump version for: Implement clone for mock ([`73fa137`](https://github.com/Byron/yup-hyper-mock/commit/73fa137837f174eb771b136d6736a95f7f153103))
     - Merge pull request #15 from rolftimmermans/master ([`f681008`](https://github.com/Byron/yup-hyper-mock/commit/f6810086ba934ee2401acc45001eea1e1478a93b))
     - Add Clone. ([`5b40a89`](https://github.com/Byron/yup-hyper-mock/commit/5b40a898f6e4e11f26492af76e3a4c9423ec9d50))
 </details>
@@ -237,7 +268,7 @@ The minor version now tracks the hyper version - it's a feature :D.
  - 17 commits contributed to the release over the course of 836 calendar days.
  - 899 days passed between releases.
  - 6 commits were understood as [conventional](https://www.conventionalcommits.org).
- - 0 issues like '(#ID)' where seen in commit messages
+ - 0 issues like '(#ID)' were seen in commit messages
 
 ### Commit Details
 
@@ -256,13 +287,13 @@ The minor version now tracks the hyper version - it's a feature :D.
     - Initial hyper 0.11 version that at least compiles ([`deb5186`](https://github.com/Byron/yup-hyper-mock/commit/deb518683b2c765bbf6d7e5ea859f49373937fce))
     - Add crates version badge ([`0780f30`](https://github.com/Byron/yup-hyper-mock/commit/0780f300c134693cbbf8f963554c49f2b6304552))
     - Relicense under Apache/MIT ([`3a9d8fc`](https://github.com/Byron/yup-hyper-mock/commit/3a9d8fc47d07c71d20311b07aea331e3ae8e38e1))
-    - v2.0 ([`58b5733`](https://github.com/Byron/yup-hyper-mock/commit/58b5733b021160c0637687612fe61035d3dd1791))
+    - V2.0 ([`58b5733`](https://github.com/Byron/yup-hyper-mock/commit/58b5733b021160c0637687612fe61035d3dd1791))
     - Merge pull request #10 from dermesser/upgrade-hyper ([`25431ca`](https://github.com/Byron/yup-hyper-mock/commit/25431cafef83cc656bcb5a71f231ca139b6cc87d))
     - Upgrade hyper to 0.10 ([`b85385f`](https://github.com/Byron/yup-hyper-mock/commit/b85385f7a69766a2271df90368d06266dc997a63))
     - Merge pull request #8 from Ryman/patch-1 ([`1856d16`](https://github.com/Byron/yup-hyper-mock/commit/1856d1614ae67a30c0e0d49dbb624bfa40567f19))
-    - update import syntax ([`97c5521`](https://github.com/Byron/yup-hyper-mock/commit/97c5521d5a0be9ce73332c4dfa186b7d9255ffd3))
+    - Update import syntax ([`97c5521`](https://github.com/Byron/yup-hyper-mock/commit/97c5521d5a0be9ce73332c4dfa186b7d9255ffd3))
     - Merge pull request #7 from rsolomo/patch-1 ([`cd0bfa8`](https://github.com/Byron/yup-hyper-mock/commit/cd0bfa8b50d60a711340a1999cc81cdb7a1cf5ee))
-    - fix example ([`2477f4e`](https://github.com/Byron/yup-hyper-mock/commit/2477f4e45957827a489b5d1cc73491af5d38e1ba))
+    - Fix example ([`2477f4e`](https://github.com/Byron/yup-hyper-mock/commit/2477f4e45957827a489b5d1cc73491af5d38e1ba))
 </details>
 
 ## v2.0.0 (2017-01-31)
@@ -282,7 +313,9 @@ Upgrade to hyper v0.10 - this might break dependencies, thus the major version j
 <csr-unknown>
 <csr-unknown>
 <csr-unknown>
+<csr-unknown>
 <a name="v1.2.0"></a><csr-unknown/>
+<csr-unknown/>
 <csr-unknown/>
 <csr-unknown/>
 <csr-unknown/>
@@ -310,7 +343,7 @@ Upgrade to hyper v0.10 - this might break dependencies, thus the major version j
  - 4 commits contributed to the release over the course of 138 calendar days.
  - 181 days passed between releases.
  - 3 commits were understood as [conventional](https://www.conventionalcommits.org).
- - 0 issues like '(#ID)' where seen in commit messages
+ - 0 issues like '(#ID)' were seen in commit messages
 
 ### Commit Details
 
@@ -319,10 +352,10 @@ Upgrade to hyper v0.10 - this might break dependencies, thus the major version j
 <details><summary>view details</summary>
 
  * **Uncategorized**
-    - v1.3.2 ([`8f09de7`](https://github.com/Byron/yup-hyper-mock/commit/8f09de7b03ebea21b37d868f9da99ed7845df542))
+    - V1.3.2 ([`8f09de7`](https://github.com/Byron/yup-hyper-mock/commit/8f09de7b03ebea21b37d868f9da99ed7845df542))
     - Merge pull request #4 from jwilm/hyper-0.7-compat ([`382a16a`](https://github.com/Byron/yup-hyper-mock/commit/382a16a5000884f5db392c8e2c57d48824b706ac))
-    - works with hyper 0.7 ([`a276610`](https://github.com/Byron/yup-hyper-mock/commit/a2766102527344f940c0e0aa51b5fee7a17b54c5))
-    - client doesn't need mutability ([`682f6e6`](https://github.com/Byron/yup-hyper-mock/commit/682f6e6311f0068690ec8eafcb11d12d3d679bad))
+    - Works with hyper 0.7 ([`a276610`](https://github.com/Byron/yup-hyper-mock/commit/a2766102527344f940c0e0aa51b5fee7a17b54c5))
+    - Client doesn't need mutability ([`682f6e6`](https://github.com/Byron/yup-hyper-mock/commit/682f6e6311f0068690ec8eafcb11d12d3d679bad))
 </details>
 
 ## v1.3.0 (2015-06-26)
@@ -344,7 +377,7 @@ Upgrade to hyper v0.10 - this might break dependencies, thus the major version j
  - 2 commits contributed to the release.
  - 7 days passed between releases.
  - 2 commits were understood as [conventional](https://www.conventionalcommits.org).
- - 0 issues like '(#ID)' where seen in commit messages
+ - 0 issues like '(#ID)' were seen in commit messages
 
 ### Commit Details
 
@@ -353,8 +386,8 @@ Upgrade to hyper v0.10 - this might break dependencies, thus the major version j
 <details><summary>view details</summary>
 
  * **Uncategorized**
-    - v1.3.0 ([`e81c7a3`](https://github.com/Byron/yup-hyper-mock/commit/e81c7a3001415f3af7d86ea49bd6d9d74631ff61))
-    - work with hyper 0.6.0 ([`5019913`](https://github.com/Byron/yup-hyper-mock/commit/501991335dde3c88e845277e3772708cc1f5eef0))
+    - V1.3.0 ([`e81c7a3`](https://github.com/Byron/yup-hyper-mock/commit/e81c7a3001415f3af7d86ea49bd6d9d74631ff61))
+    - Work with hyper 0.6.0 ([`5019913`](https://github.com/Byron/yup-hyper-mock/commit/501991335dde3c88e845277e3772708cc1f5eef0))
 </details>
 
 ## v1.2.0 (2015-06-18)
@@ -394,7 +427,7 @@ Upgrade to hyper v0.10 - this might break dependencies, thus the major version j
 
  - 3 commits contributed to the release.
  - 3 commits were understood as [conventional](https://www.conventionalcommits.org).
- - 0 issues like '(#ID)' where seen in commit messages
+ - 0 issues like '(#ID)' were seen in commit messages
 
 ### Commit Details
 
@@ -403,9 +436,9 @@ Upgrade to hyper v0.10 - this might break dependencies, thus the major version j
 <details><summary>view details</summary>
 
  * **Uncategorized**
-    - v1.2.0 ([`f59454a`](https://github.com/Byron/yup-hyper-mock/commit/f59454a8b70a1f262dea55b387fe0da1f8292886))
-    - no `RefCell` in SequentialConnector ([`d0a72f9`](https://github.com/Byron/yup-hyper-mock/commit/d0a72f96a7e1507c77af2daa183dfe2a48a4de27))
-    - added HostToReplyConnector type ([`6676331`](https://github.com/Byron/yup-hyper-mock/commit/667633168574c731ec0aa1f0266aa3be79e5d8d6))
+    - V1.2.0 ([`f59454a`](https://github.com/Byron/yup-hyper-mock/commit/f59454a8b70a1f262dea55b387fe0da1f8292886))
+    - No `RefCell` in SequentialConnector ([`d0a72f9`](https://github.com/Byron/yup-hyper-mock/commit/d0a72f96a7e1507c77af2daa183dfe2a48a4de27))
+    - Added HostToReplyConnector type ([`6676331`](https://github.com/Byron/yup-hyper-mock/commit/667633168574c731ec0aa1f0266aa3be79e5d8d6))
 </details>
 
 ## v1.1.0 (2015-06-18)
@@ -438,7 +471,7 @@ Upgrade to hyper v0.10 - this might break dependencies, thus the major version j
  - 3 commits contributed to the release.
  - 7 days passed between releases.
  - 3 commits were understood as [conventional](https://www.conventionalcommits.org).
- - 0 issues like '(#ID)' where seen in commit messages
+ - 0 issues like '(#ID)' were seen in commit messages
 
 ### Commit Details
 
@@ -447,9 +480,9 @@ Upgrade to hyper v0.10 - this might break dependencies, thus the major version j
 <details><summary>view details</summary>
 
  * **Uncategorized**
-    - v1.1.0 ([`0f5a4ae`](https://github.com/Byron/yup-hyper-mock/commit/0f5a4ae0db8ad87bef78c38073eec3aaeb9d3ead))
-    - use SequentialConnector in macro ([`c952492`](https://github.com/Byron/yup-hyper-mock/commit/c95249289b4407ba8ac9a7fb7f7ad89b6d126bad))
-    - added SequentialConnector type ([`553c9dc`](https://github.com/Byron/yup-hyper-mock/commit/553c9dcb7c7f156e706c36ff7029464b8950df4d))
+    - V1.1.0 ([`0f5a4ae`](https://github.com/Byron/yup-hyper-mock/commit/0f5a4ae0db8ad87bef78c38073eec3aaeb9d3ead))
+    - Use SequentialConnector in macro ([`c952492`](https://github.com/Byron/yup-hyper-mock/commit/c95249289b4407ba8ac9a7fb7f7ad89b6d126bad))
+    - Added SequentialConnector type ([`553c9dc`](https://github.com/Byron/yup-hyper-mock/commit/553c9dcb7c7f156e706c36ff7029464b8950df4d))
 </details>
 
 ## 1.0.1 (2015-06-11)
@@ -488,7 +521,7 @@ Upgrade to hyper v0.10 - this might break dependencies, thus the major version j
  - 5 commits contributed to the release over the course of 23 calendar days.
  - 23 days passed between releases.
  - 4 commits were understood as [conventional](https://www.conventionalcommits.org).
- - 0 issues like '(#ID)' where seen in commit messages
+ - 0 issues like '(#ID)' were seen in commit messages
 
 ### Commit Details
 
@@ -497,10 +530,10 @@ Upgrade to hyper v0.10 - this might break dependencies, thus the major version j
 <details><summary>view details</summary>
 
  * **Uncategorized**
-    - v1.0.1 ([`7d669e4`](https://github.com/Byron/yup-hyper-mock/commit/7d669e40073913394660546ee59a2ef5df81c9c1))
-    - adjust to changed hyper signatures ([`be814d0`](https://github.com/Byron/yup-hyper-mock/commit/be814d0087f791cb0597fce19e6093add41502c4))
-    - added integration tests ([`9aac86a`](https://github.com/Byron/yup-hyper-mock/commit/9aac86a680e57254767d8c7eb1b7318f6923c4ec))
-    - set to rust-stable ([`c38a54f`](https://github.com/Byron/yup-hyper-mock/commit/c38a54f877c6460fa36c2d8d71142237c9dec541))
+    - V1.0.1 ([`7d669e4`](https://github.com/Byron/yup-hyper-mock/commit/7d669e40073913394660546ee59a2ef5df81c9c1))
+    - Adjust to changed hyper signatures ([`be814d0`](https://github.com/Byron/yup-hyper-mock/commit/be814d0087f791cb0597fce19e6093add41502c4))
+    - Added integration tests ([`9aac86a`](https://github.com/Byron/yup-hyper-mock/commit/9aac86a680e57254767d8c7eb1b7318f6923c4ec))
+    - Set to rust-stable ([`c38a54f`](https://github.com/Byron/yup-hyper-mock/commit/c38a54f877c6460fa36c2d8d71142237c9dec541))
     - Merge branch 'next' ([`4dda44d`](https://github.com/Byron/yup-hyper-mock/commit/4dda44dde36f71782d3dd7b040017c0181fba94f))
 </details>
 
@@ -539,7 +572,7 @@ Upgrade to hyper v0.10 - this might break dependencies, thus the major version j
  - 4 commits contributed to the release over the course of 6 calendar days.
  - 9 days passed between releases.
  - 4 commits were understood as [conventional](https://www.conventionalcommits.org).
- - 0 issues like '(#ID)' where seen in commit messages
+ - 0 issues like '(#ID)' were seen in commit messages
 
 ### Commit Details
 
@@ -549,9 +582,9 @@ Upgrade to hyper v0.10 - this might break dependencies, thus the major version j
 
  * **Uncategorized**
     - 1.0 stable ([`cc72c7a`](https://github.com/Byron/yup-hyper-mock/commit/cc72c7a560ce849a12e6401942f4ba166e5c4b9b))
-    - assure we get the right hyper ([`ee56de4`](https://github.com/Byron/yup-hyper-mock/commit/ee56de4dead136b3ca5a3eda6ca7057f9074e261))
-    - reset to previous version of hyper ([`555a22f`](https://github.com/Byron/yup-hyper-mock/commit/555a22f9786d43ea03d475429c45ef501eda74ea))
-    - adapt to hyper >v0.4.0 ([`388f9a0`](https://github.com/Byron/yup-hyper-mock/commit/388f9a0e3c7ed057dabe30aa209e0c05039c2274))
+    - Assure we get the right hyper ([`ee56de4`](https://github.com/Byron/yup-hyper-mock/commit/ee56de4dead136b3ca5a3eda6ca7057f9074e261))
+    - Reset to previous version of hyper ([`555a22f`](https://github.com/Byron/yup-hyper-mock/commit/555a22f9786d43ea03d475429c45ef501eda74ea))
+    - Adapt to hyper >v0.4.0 ([`388f9a0`](https://github.com/Byron/yup-hyper-mock/commit/388f9a0e3c7ed057dabe30aa209e0c05039c2274))
 </details>
 
 ## v0.1.8 (2015-05-08)
@@ -591,7 +624,7 @@ Upgrade to hyper v0.10 - this might break dependencies, thus the major version j
  - 5 commits contributed to the release over the course of 1 calendar day.
  - 3 days passed between releases.
  - 4 commits were understood as [conventional](https://www.conventionalcommits.org).
- - 0 issues like '(#ID)' where seen in commit messages
+ - 0 issues like '(#ID)' were seen in commit messages
 
 ### Commit Details
 
@@ -600,11 +633,11 @@ Upgrade to hyper v0.10 - this might break dependencies, thus the major version j
 <details><summary>view details</summary>
 
  * **Uncategorized**
-    - update for v0.1.8 ([`6100662`](https://github.com/Byron/yup-hyper-mock/commit/6100662f37fe1bfb7dfb89ce8322eb14b427dfb2))
-    - use hyper::Result ([`ae019da`](https://github.com/Byron/yup-hyper-mock/commit/ae019daf13181a570570500c17b58dbd54c8f55e))
+    - Update for v0.1.8 ([`6100662`](https://github.com/Byron/yup-hyper-mock/commit/6100662f37fe1bfb7dfb89ce8322eb14b427dfb2))
+    - Use hyper::Result ([`ae019da`](https://github.com/Byron/yup-hyper-mock/commit/ae019daf13181a570570500c17b58dbd54c8f55e))
     - Merge branch 'talevy-update-0.4' ([`a534fba`](https://github.com/Byron/yup-hyper-mock/commit/a534fbae3ddd84e22a674510a6167e2bc07ab5de))
     - Update to reflect Hyper v0.4 ([`5078314`](https://github.com/Byron/yup-hyper-mock/commit/5078314f3ef33381fce92317a9f42d31f0067e7e))
-    - switch to travis-cargo ([`3c1e3e8`](https://github.com/Byron/yup-hyper-mock/commit/3c1e3e89a22ea48307286550a92abc76a5eb7212))
+    - Switch to travis-cargo ([`3c1e3e8`](https://github.com/Byron/yup-hyper-mock/commit/3c1e3e89a22ea48307286550a92abc76a5eb7212))
 </details>
 
 ## v0.1.6 (2015-05-04)
@@ -645,7 +678,7 @@ Upgrade to hyper v0.10 - this might break dependencies, thus the major version j
  - 5 commits contributed to the release over the course of 2 calendar days.
  - 25 days passed between releases.
  - 5 commits were understood as [conventional](https://www.conventionalcommits.org).
- - 0 issues like '(#ID)' where seen in commit messages
+ - 0 issues like '(#ID)' were seen in commit messages
 
 ### Commit Details
 
@@ -654,11 +687,11 @@ Upgrade to hyper v0.10 - this might break dependencies, thus the major version j
 <details><summary>view details</summary>
 
  * **Uncategorized**
-    - update for v0.1.6 ([`24f2099`](https://github.com/Byron/yup-hyper-mock/commit/24f20997fbea44f706cc41a31a20391b82fa8549))
-    - added changelog, managed by clog ([`1a1b3fa`](https://github.com/Byron/yup-hyper-mock/commit/1a1b3fa34d1c9c919a38a3a2a392422cd71c8db8))
-    - single-line to multi-line ([`8a218b5`](https://github.com/Byron/yup-hyper-mock/commit/8a218b5d1159b23c87082ce81b0cbe3220a673d3))
-    - use $crate variable instead of ::mock ([`b520fa7`](https://github.com/Byron/yup-hyper-mock/commit/b520fa77f44262598e92149f8fd995b0543b7739))
-    - added sublime-linter rust support ([`e624b3b`](https://github.com/Byron/yup-hyper-mock/commit/e624b3b7fcf54099209e02c25114298839e628ca))
+    - Update for v0.1.6 ([`24f2099`](https://github.com/Byron/yup-hyper-mock/commit/24f20997fbea44f706cc41a31a20391b82fa8549))
+    - Added changelog, managed by clog ([`1a1b3fa`](https://github.com/Byron/yup-hyper-mock/commit/1a1b3fa34d1c9c919a38a3a2a392422cd71c8db8))
+    - Single-line to multi-line ([`8a218b5`](https://github.com/Byron/yup-hyper-mock/commit/8a218b5d1159b23c87082ce81b0cbe3220a673d3))
+    - Use $crate variable instead of ::mock ([`b520fa7`](https://github.com/Byron/yup-hyper-mock/commit/b520fa77f44262598e92149f8fd995b0543b7739))
+    - Added sublime-linter rust support ([`e624b3b`](https://github.com/Byron/yup-hyper-mock/commit/e624b3b7fcf54099209e02c25114298839e628ca))
 </details>
 
 ## v0.1.5 (2015-04-08)
@@ -676,7 +709,7 @@ Upgrade to hyper v0.10 - this might break dependencies, thus the major version j
  - 1 commit contributed to the release.
  - 1 day passed between releases.
  - 1 commit was understood as [conventional](https://www.conventionalcommits.org).
- - 0 issues like '(#ID)' where seen in commit messages
+ - 0 issues like '(#ID)' were seen in commit messages
 
 ### Commit Details
 
@@ -685,7 +718,7 @@ Upgrade to hyper v0.10 - this might break dependencies, thus the major version j
 <details><summary>view details</summary>
 
  * **Uncategorized**
-    - v0.1.5 (hyper adjustments) ([`65b3baa`](https://github.com/Byron/yup-hyper-mock/commit/65b3baa0b7ffe05cf1047010d6de3273f3057ffd))
+    - V0.1.5 (hyper adjustments) ([`65b3baa`](https://github.com/Byron/yup-hyper-mock/commit/65b3baa0b7ffe05cf1047010d6de3273f3057ffd))
 </details>
 
 ## v0.1.4 (2015-04-07)
@@ -725,7 +758,7 @@ Upgrade to hyper v0.10 - this might break dependencies, thus the major version j
 
  - 12 commits contributed to the release over the course of 39 calendar days.
  - 7 commits were understood as [conventional](https://www.conventionalcommits.org).
- - 0 issues like '(#ID)' where seen in commit messages
+ - 0 issues like '(#ID)' were seen in commit messages
 
 ### Commit Details
 
@@ -734,18 +767,18 @@ Upgrade to hyper v0.10 - this might break dependencies, thus the major version j
 <details><summary>view details</summary>
 
  * **Uncategorized**
-    - rustc (be9bd7c93 2015-04-05) ([`6e8616a`](https://github.com/Byron/yup-hyper-mock/commit/6e8616a7180fec5d07ab85230fa7d54ee2ee3c97))
-    - work as well now (thanks, oauth2) ([`bbb0e73`](https://github.com/Byron/yup-hyper-mock/commit/bbb0e73953c8931f7ed1ecfe85f7f3198bedeeb1))
-    - remove old_io entirely ([`d6c4943`](https://github.com/Byron/yup-hyper-mock/commit/d6c4943bd3e9f2029baa56e68e60b129f2afc9cb))
-    - allow shared mock types ([`981d8bf`](https://github.com/Byron/yup-hyper-mock/commit/981d8bfb408c63d7705d565f734207c8df567d2f))
-    - guidelines added ([`ad83e7d`](https://github.com/Byron/yup-hyper-mock/commit/ad83e7d6883e1e28d31d66b10fc92f33c4735edf))
-    - added license info ([`c112b90`](https://github.com/Byron/yup-hyper-mock/commit/c112b907de1d0a380947d22443466c5beed12ef0))
-    - added travis badge ([`a5584bc`](https://github.com/Byron/yup-hyper-mock/commit/a5584bc31384328ac79d6553bc057f261ebaf6b7))
+    - Rustc (be9bd7c93 2015-04-05) ([`6e8616a`](https://github.com/Byron/yup-hyper-mock/commit/6e8616a7180fec5d07ab85230fa7d54ee2ee3c97))
+    - Work as well now (thanks, oauth2) ([`bbb0e73`](https://github.com/Byron/yup-hyper-mock/commit/bbb0e73953c8931f7ed1ecfe85f7f3198bedeeb1))
+    - Remove old_io entirely ([`d6c4943`](https://github.com/Byron/yup-hyper-mock/commit/d6c4943bd3e9f2029baa56e68e60b129f2afc9cb))
+    - Allow shared mock types ([`981d8bf`](https://github.com/Byron/yup-hyper-mock/commit/981d8bfb408c63d7705d565f734207c8df567d2f))
+    - Guidelines added ([`ad83e7d`](https://github.com/Byron/yup-hyper-mock/commit/ad83e7d6883e1e28d31d66b10fc92f33c4735edf))
+    - Added license info ([`c112b90`](https://github.com/Byron/yup-hyper-mock/commit/c112b907de1d0a380947d22443466c5beed12ef0))
+    - Added travis badge ([`a5584bc`](https://github.com/Byron/yup-hyper-mock/commit/a5584bc31384328ac79d6553bc057f261ebaf6b7))
     - Added documentation URL ([`6aafcbc`](https://github.com/Byron/yup-hyper-mock/commit/6aafcbc065b4d85adc55b90ae0999a5231907cf2))
     - Bumped version to 0.1 - it's actually usable ... ([`4e4c05b`](https://github.com/Byron/yup-hyper-mock/commit/4e4c05bd6fb00867c5c3226e7fdde6a7bca5fc41))
     - Added missing documentation ([`1ff21e0`](https://github.com/Byron/yup-hyper-mock/commit/1ff21e0686cb9bf7b85781ddc5b71736169be151))
     - Setup travis and sublime ([`44efaf9`](https://github.com/Byron/yup-hyper-mock/commit/44efaf936c00bbb88102e9af658e610b673a0a4a))
-    - initial commit after removing it from yup/lib ([`aa284eb`](https://github.com/Byron/yup-hyper-mock/commit/aa284eb98e49e8d79fc9bed8d9e2146f1e634ecd))
+    - Initial commit after removing it from yup/lib ([`aa284eb`](https://github.com/Byron/yup-hyper-mock/commit/aa284eb98e49e8d79fc9bed8d9e2146f1e634ecd))
 </details>
 
 <csr-unknown>
