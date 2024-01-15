@@ -12,19 +12,14 @@ yup-hyper-mock = "*"
 log = "*"  # log macros are used within yup-hyper-mock
 ```
 
-Link it in case you are testing only in your `src/(lib.rs|main.rs)`
-```Rust
-#[cfg(test)] #[macro_use]
-extern crate yup_hyper_mock as hyper_mock
-```
-
 In your tests module
 ```Rust
 #[cfg(test)]
 mod tests {
     use hyper;
+    use hyper_util::client::legacy::Client;
 
-    mock_connector!(MockRedirectPolicy {
+    yup_hyper_mock::mock_connector!(MockRedirectPolicy {
         "http://127.0.0.1" =>       "HTTP/1.1 301 Redirect\r\n\
                                      Location: http://127.0.0.2\r\n\
                                      Server: mock1\r\n\
@@ -41,13 +36,21 @@ mod tests {
                                     "
     });
 
-    #[test]
-    fn test_redirect_followall() {
-        let mut client = hyper::Client::with_connector(MockRedirectPolicy::default());
-        client.set_redirect_policy(hyper::client::RedirectPolicy::FollowAll);
+    #[tokio::test]
+    async fn test_redirect_followall() {
+        let builder =
+            hyper_util::client::legacy::Client::builder(hyper_util::rt::TokioExecutor::new());
+        let client: Client<MockRedirectPolicy, http_body_util::Empty<hyper::body::Bytes>> =
+            builder.build(MockRedirectPolicy::default());
 
-        let res = client.get("http://127.0.0.1").send().unwrap();
-        assert_eq!(res.headers.get(), Some(&hyper::header::Server("mock3".to_owned())));
+        let res = client
+            .get(hyper::Uri::from_static("http://127.0.0.1"))
+            .await
+            .unwrap();
+
+        let headers = res.headers();
+        assert!(headers.contains_key("Server"));
+        assert_eq!(headers["Server"], "mock1");
     }
 }
 ```

@@ -26,8 +26,7 @@
 //! extern crate "yup-hyper-mock" as hyper_mock
 //! ```
 
-#[macro_use]
-extern crate log;
+use log::debug;
 
 use std::collections::HashMap;
 use std::pin::Pin;
@@ -37,7 +36,8 @@ use std::task::{Context, Poll};
 use futures;
 use futures::lock::Mutex;
 use futures::Future;
-use hyper::{service::Service, Uri};
+use hyper::Uri;
+use tower_service::Service;
 
 mod streams;
 pub use crate::streams::MockPollStream;
@@ -60,7 +60,7 @@ macro_rules! mock_connector (
             }
         }
 
-        impl hyper::service::Service<hyper::Uri> for $name {
+        impl tower_service::Service<hyper::Uri> for $name {
             type Response = $crate::MockPollStream;
             type Error = std::io::Error;
             type Future = std::pin::Pin<Box<dyn std::future::Future<Output = Result<Self::Response, Self::Error>> + Send>>;
@@ -127,7 +127,7 @@ macro_rules! mock_connector_in_order (
             }
         }
 
-        impl hyper::service::Service<hyper::Uri> for $name {
+        impl tower_service::Service<hyper::Uri> for $name {
             type Response = $crate::MockPollStream;
             type Error = std::io::Error;
             type Future = std::pin::Pin<Box<dyn std::future::Future<Output = Result<Self::Response, Self::Error>> + Send>>;

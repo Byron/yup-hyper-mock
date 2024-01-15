@@ -1,10 +1,15 @@
-use hyper;
-#[macro_use]
-extern crate yup_hyper_mock;
+use std::io;
 
-use futures::stream::TryStreamExt;
+use http_body_util::{combinators::BoxBody, BodyExt};
+use hyper::{
+    self,
+    body::{Bytes, Incoming},
+};
 
-use hyper::{client::Client, header, Body, Response};
+use yup_hyper_mock::{mock_connector, mock_connector_in_order};
+
+use hyper::{header, Response};
+use hyper_util::{client::legacy::Client, rt::TokioExecutor};
 
 mock_connector_in_order! (MockSequential {
 "HTTP/1.1 200 OK\r\n\
@@ -35,24 +40,21 @@ mock_connector!(MockRedirectPolicy {
                                 "
 });
 
-async fn result_to_bytes(res: Response<Body>) -> String {
-    let buf = res
-        .into_body()
-        .try_fold(Vec::new(), |mut buf, bytes| {
-            buf.extend_from_slice(bytes.as_ref());
-            async move { Ok(buf) }
-        })
-        .await
-        .unwrap();
-    String::from_utf8(buf).unwrap()
+async fn result_to_bytes(res: Response<Incoming>) -> String {
+    let buf = res.into_body().collect().await.unwrap().to_bytes();
+    String::from_utf8(buf.to_vec()).unwrap()
 }
 
 /// Just to test the result of `mock_connector!` - this test was copied from hyper.
 #[tokio::test]
 async fn test_redirect_followall() {
-    let client = Client::builder().build::<MockRedirectPolicy, Body>(MockRedirectPolicy::default());
+    let client = Client::builder(TokioExecutor::new()).build(MockRedirectPolicy::default());
 
-    async fn check_server(client: &Client<MockRedirectPolicy, Body>, url: &str, server: &str) {
+    async fn check_server(
+        client: &Client<MockRedirectPolicy, BoxBody<Bytes, io::Error>>,
+        url: &str,
+        server: &str,
+    ) {
         let res = client.get(url.parse().unwrap()).await.unwrap();
         let header = header::HeaderValue::from_str(&server).unwrap();
         assert_eq!(res.headers().get(header::SERVER), Some(&header));
@@ -65,7 +67,8 @@ async fn test_redirect_followall() {
 
 #[tokio::test]
 async fn test_sequential_mock() {
-    let client = Client::builder().build::<MockSequential, Body>(MockSequential::default());
+    let client = Client::builder(TokioExecutor::new())
+        .build::<MockSequential, BoxBody<Bytes, io::Error>>(MockSequential::default());
 
     let res = client
         .get("http://127.0.0.1".parse().unwrap())
